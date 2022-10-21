@@ -1,6 +1,7 @@
 import { TokenAmount, NATIVE } from '@feswap/sdk'
 import React, { useState } from 'react'
 import { Text } from 'rebass'
+import { RouteComponentProps, withRouter } from 'react-router-dom'
 import { NavLink } from 'react-router-dom'
 import { darken } from 'polished'
 import Web3Network, { NETWORK_LABELS } from '../Web3Network'
@@ -8,10 +9,10 @@ import Web3Network, { NETWORK_LABELS } from '../Web3Network'
 
 import styled from 'styled-components'
 
-import Logo from '../../assets/svg/logo.svg'
-import LogoDark from '../../assets/svg/logo_white.svg'
+// import Logo from '../../assets/svg/logo.svg'
+// import LogoDark from '../../assets/svg/logo_white.svg'
 import { useActiveWeb3React } from '../../hooks'
-import { useDarkModeManager } from '../../state/user/hooks'
+//import { useDarkModeManager } from '../../state/user/hooks'
 import { useETHBalances, useAggregateFeswBalance } from '../../state/wallet/hooks'
 import { CardNoise } from '../earn/styled'
 import { CountUp } from 'use-count-up'
@@ -31,7 +32,7 @@ import { Dots } from '../swap/styleds'
 import Modal from '../Modal'
 import UniBalanceContent from './UniBalanceContent'
 import usePrevious from '../../hooks/usePrevious'
-import { FESW } from '../../constants'
+//import { FESW } from '../../constants'
 
 const HeaderFrame = styled.div`
   display: grid;
@@ -104,7 +105,6 @@ const HeaderElementWrap = styled.div`
   display: flex;
   align-items: center;
 `
-
 
 const HeaderLinks = styled(Row)`
   justify-content: left;
@@ -182,7 +182,7 @@ const BalanceText = styled(Text)`
     display: none;
   `};
 `
-
+/*
 const Title = styled.a`
   display: flex;
   align-items: center;
@@ -203,6 +203,7 @@ const UniIcon = styled.div`
     transform: rotate(-5deg);
   }
 `
+*/
 
 const activeClassName = 'ACTIVE'
 
@@ -271,13 +272,16 @@ const StyledExternalLink = styled(ExternalLink).attrs({
 
 `
 
-export default function Header() {
+
+function Header({ history }: RouteComponentProps) {
   const { account, chainId } = useActiveWeb3React()
-  const GORV_TOKEN_NAME = chainId ? FESW[chainId].symbol : 'FESW'
+//  const GORV_TOKEN_NAME = chainId ? FESW[chainId].symbol : 'FESW'
+  const GORV_TOKEN_NAME = 'AKRE'
+
 //  const { t } = useTranslation()
 
   const userEthBalance = useETHBalances(account ? [account] : [])?.[account ?? '']
-  const [isDark] = useDarkModeManager()
+//  const [isDark] = useDarkModeManager()
 
   const toggleClaimModal = useToggleSelfClaimModal()
 
@@ -302,44 +306,32 @@ export default function Header() {
       <Modal isOpen={showUniBalanceModal} onDismiss={() => setShowUniBalanceModal(false)}>
         <UniBalanceContent setShowUniBalanceModal={setShowUniBalanceModal} />
       </Modal>
-        <Title href=".">
-          <UniIcon>
-            <img width={'24px'} src={isDark ? LogoDark : Logo} alt="logo" />
-          </UniIcon>
-        </Title>
+      {
+      (history.location.pathname === '/swap') ?
         <HeaderLinks>
-              <StyledNavLink id={`swap-nav-link`} to={'/swap'} style={{gridColumn:'1/2', gridRow:'1/3'}}>
-                FeSwap
-              </StyledNavLink>
-              <StyledNavLink
-                id={`pool-nav-link`}
-                to={'/liquidity'}
-                isActive={(match, { pathname }) =>
-                  Boolean(match) ||
-                  pathname.startsWith('/add') ||
-                  pathname.startsWith('/remove') ||
-                  pathname.startsWith('/create') ||
-                  pathname.startsWith('/find')
-                }
-              >
-                Liquidity
-              </StyledNavLink>
-              <StyledNavLink id={`stake-nav-link`} to={'/fesw'}>
-                Mining
-              </StyledNavLink>
-              <StyledNavLink id={`nft-nav-link`} to={'/nft'}>
-                NFT
-              </StyledNavLink>
-              <StyledNavLink id={`dao-nav-link`} to={'/vote'}>
-                DAO
-              </StyledNavLink>
-              <StyledExternalLink id={`charts-nav-link`} href={'https://info.feswap.io'}>
-                Charts <span style={{ fontSize: '11px' }}>↗</span>
-              </StyledExternalLink>	 
-              <StyledExternalLink id={`docs-nav-link`} href={'https://www.feswap.io/docs'}>
-                Docs <span style={{ fontSize: '11px' }}>↗</span>
-              </StyledExternalLink>	 
-        </HeaderLinks>
+          <StyledNavLink id={`swap-nav-link`} to={'/swap'}>
+            Swap
+          </StyledNavLink>
+          <StyledNavLink id={`pool-nav-link`} to={'/liquidity'} >
+            Liquidity
+          </StyledNavLink>
+          <StyledNavLink id={`stake-nav-link`} to={'/fesw'}>
+            Mining
+          </StyledNavLink>
+          <StyledNavLink id={`nft-nav-link`} to={'/nft'}>
+            NFT
+          </StyledNavLink>
+          <StyledNavLink id={`dao-nav-link`} to={'/vote'}>
+            DAO
+          </StyledNavLink>
+          <StyledExternalLink id={`charts-nav-link`} href={'https://info.feswap.io'}>
+            Charts <span style={{ fontSize: '11px' }}>↗</span>
+          </StyledExternalLink>	 
+          <StyledExternalLink id={`docs-nav-link`} href={'https://www.feswap.io/docs'}>
+            Docs <span style={{ fontSize: '11px' }}>↗</span>
+          </StyledExternalLink>	 
+        </HeaderLinks> : <div/>
+      }
       <HeaderControls>
         <HeaderElement>
           <HideSmall>
@@ -407,3 +399,42 @@ export default function Header() {
     </HeaderFrame>
   )
 }
+
+
+export default withRouter(Header)
+
+/*
+<HeaderLinks>
+<StyledNavLink id={`swap-nav-link`} to={'/swap'}>
+  Swap
+</StyledNavLink>
+<StyledNavLink
+  id={`pool-nav-link`}
+  to={'/liquidity'}
+  isActive={(match, { pathname }) =>
+    Boolean(match) ||
+    pathname.startsWith('/add') ||
+    pathname.startsWith('/remove') ||
+    pathname.startsWith('/create') ||
+    pathname.startsWith('/find')
+  }
+>
+  Liquidity
+</StyledNavLink>
+<StyledNavLink id={`stake-nav-link`} to={'/fesw'}>
+  Mining
+</StyledNavLink>
+<StyledNavLink id={`nft-nav-link`} to={'/nft'}>
+  NFT
+</StyledNavLink>
+<StyledNavLink id={`dao-nav-link`} to={'/vote'}>
+  DAO
+</StyledNavLink>
+<StyledExternalLink id={`charts-nav-link`} href={'https://info.feswap.io'}>
+  Charts <span style={{ fontSize: '11px' }}>↗</span>
+</StyledExternalLink>	 
+<StyledExternalLink id={`docs-nav-link`} href={'https://www.feswap.io/docs'}>
+  Docs <span style={{ fontSize: '11px' }}>↗</span>
+</StyledExternalLink>	 
+</HeaderLinks>
+*/

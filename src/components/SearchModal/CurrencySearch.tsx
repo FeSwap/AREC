@@ -1,7 +1,7 @@
 import { Currency, ETHER, Token } from '@feswap/sdk'
 import React, { KeyboardEvent, RefObject, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import ReactGA from 'react-ga'
-import { useTranslation } from 'react-i18next'
+//import { useTranslation } from 'react-i18next'
 import { FixedSizeList } from 'react-window'
 import { Text } from 'rebass'
 import { ThemeContext } from 'styled-components'
@@ -42,7 +42,7 @@ export function CurrencySearch({
   isOpen,
   onChangeList
 }: CurrencySearchProps) {
-  const { t } = useTranslation()
+//  const { t } = useTranslation()
   const { chainId } = useActiveWeb3React()
   const theme = useContext(ThemeContext)
 
@@ -150,7 +150,7 @@ export function CurrencySearch({
         <SearchInput
           type="text"
           id="token-search-input"
-          placeholder={t('Input name, symbol or address')}
+          placeholder={'Input name, symbol or address'}
           value={searchQuery}
           ref={inputRef as RefObject<HTMLInputElement>}
           onChange={handleInput}

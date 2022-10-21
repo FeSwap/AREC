@@ -36,4 +36,15 @@ export const RowFixed = styled(Row)<{ gap?: string; justify?: string }>`
   margin: ${({ gap }) => gap && `-${gap}`};
 `
 
+export const Divider = styled(Box)`
+  height: 1px;
+  margin: 0px 20px;
+  background-color: ${({ theme }) => theme.text4};
+`
+
+export const Gap = styled(Box)`
+  height: 20px;
+`
+
+
 export default Row

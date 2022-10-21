@@ -23,6 +23,9 @@ import { ERC20_BYTES32_ABI } from '../constants/abis/erc20'
 import ERC20_ABI from '../constants/abis/erc20.json'
 import UNISOCKS_ABI from '../constants/abis/unisocks.json'
 import WETH_ABI from '../constants/abis/weth.json'
+import ArkreenToken_ABI from '../constants/abis/ArkreenToken.json'
+import ArkreenRECIssuance_ABI from '../constants/abis/ArkreenRECIssuance.json'
+
 import { MULTICALL_ABI, MULTICALL_NETWORKS } from '../constants/multicall'
 import { getContract } from '../utils'
 import { useActiveWeb3React } from './index'
@@ -154,3 +157,15 @@ export function useSocksController(): Contract | null {
     false
   )
 }
+
+export const arkreenTokenAddress    = "0x54e1c534f59343c56549c76d1bdccc8717129832"
+export const arkreenIssuanceAddress = "0x95f56340889642a41b913c32d160d2863536e073"
+
+export function useArkreenTokenContract(withSignerIfPossible?: boolean): Contract | null {
+  return useContract(arkreenTokenAddress, ArkreenToken_ABI, withSignerIfPossible)
+}
+
+export function useRECIssuanceContract(withSignerIfPossible?: boolean): Contract | null {
+  return useContract(arkreenIssuanceAddress, ArkreenRECIssuance_ABI, withSignerIfPossible)
+}
+

@@ -67,6 +67,7 @@
     "qs": "^6.9.4",
     "react": "^16.13.1",
     "react-confetti": "^6.0.0",
+    "react-datetime-picker": "^4.0.1",
     "react-device-detect": "^1.6.2",
     "react-dom": "^16.13.1",
     "react-feather": "^2.0.8",
@@ -78,6 +79,7 @@
     "react-router-dom": "^5.0.0",
     "react-scripts": "^3.4.1",
     "react-spring": "^8.0.27",
+    "react-use": "^12.2.0",
     "react-use-gesture": "^6.0.14",
     "react-virtualized-auto-sizer": "^1.0.2",
     "react-window": "^1.8.5",
@@ -120,5 +122,9 @@
       "last 1 safari version"
     ]
   },
-  "license": "GPL-3.0-or-later"
+  "license": "GPL-3.0-or-later",
+  "dependencies": {
+    "react-datepicker": "^4.8.0",
+    "react-datetime": "^3.1.1"
+  }
 }

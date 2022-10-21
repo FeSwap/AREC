@@ -3,7 +3,7 @@ import { HelpCircle as Question } from 'react-feather'
 import styled, { ThemeContext } from 'styled-components'
 import Tooltip from '../Tooltip'
 
-const QuestionWrapper = styled.div`
+const QuestionWrapper = styled.div<{bkgOff?: boolean}>`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -13,7 +13,7 @@ const QuestionWrapper = styled.div`
   outline: none;
   cursor: default;
   border-radius: 36px;
-  background-color: ${({ theme }) => theme.bg1};
+  background-color: ${({theme, bkgOff}) => (bkgOff ? 'none' : theme.bg1) };
   color: ${({ theme }) => theme.text2};
 
   :hover,
@@ -21,6 +21,12 @@ const QuestionWrapper = styled.div`
     opacity: 0.7;
   }
 `
+
+// ${({ theme, error }) => (error ? theme.red1 : 'inherit')};
+// ${({ theme, status }) => (status === 'for' ? theme.green1 : theme.red1)};
+
+
+//background-color: ${({ theme }) => theme.bg1};
 
 const LightQuestionWrapper = styled.div`
   display: flex;
@@ -47,7 +53,8 @@ const QuestionMark = styled.span`
   font-size: 1rem;
 `
 
-export default function QuestionHelper({ text, info, warning = false }: { text: string, info?: JSX.Element, warning?: boolean}) {
+export default function QuestionHelper({ text, info, warning = false, small, bkgOff }: 
+                    { text?: string, info?: JSX.Element, warning?: boolean, small?: boolean, bkgOff?: boolean }) {
   const [show, setShow] = useState<boolean>(false)
   const theme = useContext(ThemeContext)
 
@@ -57,8 +64,8 @@ export default function QuestionHelper({ text, info, warning = false }: { text: 
   return (
     <span style={{ marginLeft: 4 }}>
       <Tooltip text={text} info={info} show={show}>
-        <QuestionWrapper onClick={open} onMouseEnter={open} onMouseLeave={close}>
-          { <Question color={warning ? theme.primary1: undefined } size={20} />
+        <QuestionWrapper onClick={open} onMouseEnter={open} onMouseLeave={close} bkgOff={bkgOff}>
+          { <Question color={warning ? theme.primary1: undefined } size={small ? 12 : 20} />
           }
         </QuestionWrapper>
       </Tooltip>

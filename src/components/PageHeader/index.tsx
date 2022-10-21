@@ -8,11 +8,13 @@ export const StyledPageHeader = styled.div`
   margin-bottom: 6px;
   width: 100%;
   height: 50px;
-  max-width: 480px;
   font-size:  24px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.3);
   color: ${({ theme }) => theme.text2};
 `
+//max-width: 480px;
+
+
 interface PageHeaderProps {
   header: string
   children?: React.ReactNode

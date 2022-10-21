@@ -62,6 +62,7 @@ const CardWrapper = styled.div`
   gap: 20px;
   width: 100%;
 `
+//export const CreatePairByNft: React.FC = () => {
 
 export default function CreatePairByNft() {
   const { account, chainId, library } = useActiveWeb3React()

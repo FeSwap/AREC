@@ -34,6 +34,8 @@ const mediaWidthTemplates: { [width in keyof typeof MEDIA_WIDTHS]: typeof css } 
 const white = '#FFFFFF'
 const black = '#000000'
 
+// text2: darkMode ? '#C3C5CB' : '#565A69',
+
 export function colors(darkMode: boolean): Colors {
   return {
     // base
@@ -42,7 +44,7 @@ export function colors(darkMode: boolean): Colors {
 
     // text
     text1: darkMode ? '#FFFFFF' : '#000000',
-    text2: darkMode ? '#C3C5CB' : '#565A69',
+    text2: darkMode ? '#C3C5CB' : '#363A49',
     text3: darkMode ? '#6C7284' : '#888D9B',
     text4: darkMode ? '#565A69' : '#C3C5CB',
     text5: darkMode ? '#2C2F36' : '#EDEEF2',
@@ -62,6 +64,8 @@ export function colors(darkMode: boolean): Colors {
     //specialty colors
     modalBG: darkMode ? 'rgba(0,0,0,.425)' : 'rgba(0,0,0,0.3)',
     advancedBG: darkMode ? 'rgba(0,0,0,0.1)' : '#d1fcf9',
+
+    divider: darkMode ? 'rgba(43, 43, 43, 0.435)' : 'rgba(43, 43, 43, 0.035)',
 
     // rgba(200,252,248)
     // 87CEFA 209,252,249 200,252,248 222,222,248,  232,216,228 , 233,199,205, 233,216,229, 188,251,247
@@ -87,7 +91,8 @@ export function colors(darkMode: boolean): Colors {
     green1: '#27AE60',
     yellow1: '#FFE270',
     yellow2: '#F3841E',
-    blue1: '#2172E5'
+    blue1: '#2172E5',
+    link: '#2172E5'
 
     // dont wanna forget these blue yet
     // blue4: darkMode ? '#153d6f70' : '#C4D9F8',
@@ -231,7 +236,7 @@ html {
 
 body {
   min-height: 100vh;
-  background-image: linear-gradient(rgba(0,192,239,0.3), rgba(250,234,229,0.3));
+  background-image: linear-gradient(rgba(0,192,239,0.4), rgba(250,234,229,0.3));
 }
 `
 

@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import Popover, { PopoverProps } from '../Popover'
 
 const TooltipContainer = styled.div`
-  width: 320px;
+  width: 360px;
   padding: 0.6rem 0.8rem;
   line-height: 150%;
   font-weight: 400;
@@ -16,7 +16,7 @@ interface TooltipProps extends Omit<PopoverProps, 'content'> {
 }
 
 export default function Tooltip({ text, info, ...rest }: TooltipProps) {
-  return <Popover content={<TooltipContainer>{text} {info}</TooltipContainer>} {...rest} />
+  return <Popover content={<TooltipContainer><b>{text}</b> {info}</TooltipContainer>} {...rest} />
 }
 
 export function MouseoverTooltip({ children, ...rest }: Omit<TooltipProps, 'show'>) {

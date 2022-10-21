@@ -79,7 +79,7 @@ export const InputPanel = styled.div<{ hideInput?: boolean }>`
 `
 //background-color: ${({ theme }) => theme.bg2};
 
-export const Container = styled.div<{ hideInput: boolean }>`
+export const Container = styled.div<{ hideInput?: boolean }>`
   border-radius: ${({ hideInput }) => (hideInput ? '8px' : '8px')};
   border: 1px solid ${({ theme }) => theme.bg5};
   background: transparent;

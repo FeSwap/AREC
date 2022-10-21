@@ -7,6 +7,7 @@ import Header from '../components/Header'
 import Polling from '../components/Header/Polling'
 import URLWarning from '../components/Header/URLWarning'
 import Popups from '../components/Popups'
+import SideNav from '../components/SideNav'
 import Web3ReactManager from '../components/Web3ReactManager'
 //import { ApplicationModal } from '../state/application/actions'
 //import { useModalOpen, useToggleModal } from '../state/application/hooks'
@@ -19,11 +20,18 @@ import {
 import Earn from './Earn'
 import Manage from './Earn/Manage'
 import Pool from './Pool'
-import PoolFinder from './PoolFinder'
+//import PoolFinder from './PoolFinder'
+import Overview from './Overview'
+import Test from './Test'
+
 import RemoveLiquidity from './RemoveLiquidity'
 import { RedirectOldRemoveLiquidityPathStructure } from './RemoveLiquidity/redirects'
 import Swap from './Swap'
 import Nft from './Nft'
+import Issuance from './Issuance'
+import Retirement from './Retirement'
+import Liquidize from './Liquidize'
+
 import CreateProposal from './CreateProposal'
 import {RedirectNftCheckSingleId, RedirectNftCheckTwoIds} from './Nft/redirects'
 import CreatePairByNft from './CreatePair'
@@ -41,6 +49,17 @@ const AppWrapper = styled.div`
   overflow-x: hidden;
 `
 
+const ContentWrapper = styled.div`
+  display: grid;
+  grid-template-columns: 220px 1fr
+  @media screen and (max-width: 1080px) {
+    grid-template-columns: 1fr;
+    max-width: 100vw;
+    overflow: hidden;
+    grid-gap: 0;
+  }
+`
+
 const HeaderWrapper = styled.div`
   ${({ theme }) => theme.flexRowNoWrap}
   width: 100%;
@@ -51,7 +70,7 @@ const BodyWrapper = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
-  padding-top: 100px;
+  padding-top: 80px;
   align-items: center;
   flex: 1;
   overflow-y: auto;
@@ -86,6 +105,8 @@ export default function App() {
     <Suspense fallback={null}>
       <Route component={GoogleAnalyticsReporter} />
       <Route component={DarkModeQueryParamReader} />
+      <ContentWrapper>
+      <SideNav />
       <AppWrapper>
         <URLWarning />
         <HeaderWrapper>
@@ -96,10 +117,15 @@ export default function App() {
           <Polling />
           <Web3ReactManager>
             <Switch>
+              <Route exact path="/" component={Overview} />              
+              <Route exact strict path="/Overview" component={Overview} />              
               <Route exact strict path="/swap" component={Swap} />
               <Route exact strict path="/swap/:outputCurrency" component={RedirectToSwap} />
               <Route exact strict path="/send" component={RedirectPathToSwapOnly} />
-              <Route exact strict path="/find" component={PoolFinder} />
+              <Route exact strict path="/Issuance" component={Issuance} />
+              <Route exact strict path="/Liquidize" component={Liquidize} />
+              <Route exact strict path="/Retirement" component={Retirement} />   
+              <Route exact strict path="/Test" component={Test} />              
               <Route exact strict path="/liquidity" component={Pool} />
               <Route exact strict path="/fesw" component={Earn} />
               <Route exact strict path="/vote" component={Vote} />
@@ -123,6 +149,7 @@ export default function App() {
           <Marginer />
         </BodyWrapper>
       </AppWrapper>
+      </ContentWrapper>
     </Suspense>
   )
 }

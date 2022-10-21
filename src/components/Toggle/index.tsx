@@ -1,5 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
+import { Sun, Moon } from 'react-feather'
 
 const ToggleElement = styled.span<{ isActive?: boolean; isOnSwitch?: boolean }>`
   padding: 0.35rem 0.6rem;
@@ -19,14 +20,12 @@ const ToggleElement = styled.span<{ isActive?: boolean; isOnSwitch?: boolean }>`
 const StyledToggle = styled.button<{ isActive?: boolean; activeElement?: boolean }>`
   border-radius: 8px;
   border: none;
-  /* border: 1px solid ${({ theme, isActive }) => (isActive ? theme.primary5 : theme.text4)}; */
   background: ${({ theme }) => theme.bg3};
   display: flex;
   width: fit-content;
   cursor: pointer;
   outline: none;
   padding: 0;
-  /* background-color: transparent; */
 `
 
 export interface ToggleProps {
@@ -45,5 +44,43 @@ export default function Toggle({ id, isActive, toggle }: ToggleProps) {
         Off
       </ToggleElement>
     </StyledToggle>
+  )
+}
+
+const IconWrapper = styled.div<{ isActive?: boolean }>`
+  opacity: ${({ isActive }) => (isActive ? 0.8 : 0.4)};
+
+  :hover {
+    opacity: 1;
+  }
+`
+
+const StyledTogglePic = styled.div`
+  display: flex;
+  width: fit-content;
+  cursor: pointer;
+  text-decoration: none;
+  margin-top: 1rem;
+  color: ${({ theme }) => theme.text2};
+  :hover {
+    text-decoration: none;
+  }
+`
+
+export function TogglePic({id, isActive, toggle }: ToggleProps) {
+  return (
+    <StyledTogglePic id={id} onClick={toggle}>
+      <span>
+        <IconWrapper isActive={!isActive}>
+          <Sun size={20} />
+        </IconWrapper>
+      </span>
+      <span style={{ padding: '0 .5rem' }}>{' / '}</span>
+      <span>
+        <IconWrapper isActive={isActive}>
+          <Moon size={20} />
+        </IconWrapper>
+      </span>
+    </StyledTogglePic>
   )
 }
