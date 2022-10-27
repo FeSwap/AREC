@@ -152,6 +152,25 @@ function InfoData({tag, info}: InfoDataProps) {
   )
 }
 
+const ScrollSelect = styled.select`
+  appearance:none;
+  -moz-appearance:none;
+  -webkit-appearance:none;
+
+  ::-webkit-scrollbar-track
+  {
+    -webkit-box-shadow: inset 0 0 8px rgb(1, 64, 118);
+    border-radius: 6px;
+    background-color: rgba(245, 245, 245, 0.2);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border-radius: 6px;
+    background-clip: content-box;
+    box-shadow: 0 0 0 5px #464f70 inset;
+    -webkit-box-shadow: inset 0 0 8px
+  }
+`
 
 /*
 const ListOptions = styled(AutoRow)`
@@ -235,9 +254,12 @@ const onDate = useCallback( (date1) => {
           </Text>
         </div>
 
-
-        <form>
-          <select name = "选择城市" onChange={onSelect}>
+          <ScrollSelect multiple name = "选择城市" onChange={onSelect} style={{ fontSize:16, fontWeight:500, width:'50%', 
+                                    borderColor: theme.text1,
+                                    borderWidth: "1px",
+                                    borderRadius: '4px 4px 4px 4px',
+                                    appearance: 'none',
+                                    padding: '0.4rem 0.6rem 0.4rem 0.6rem', fontFamily: 'Lucida Console'}}>
             <optgroup label="山东省">
               <option value="潍坊">潍坊</option>
               <option value="青岛" selected={true}>青岛</option>
@@ -246,8 +268,8 @@ const onDate = useCallback( (date1) => {
               <option value="太原">太原</option>
               <option value="榆次">榆次</option>
             </optgroup>
-          </select>
-        </form>
+          </ScrollSelect>
+
 
         <input type="date" name="date1" translate='no' onChange={onDate}/>
 

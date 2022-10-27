@@ -17,7 +17,8 @@ import {
   toggleURLWarning,
   updateUserSingleHopOnly,
   addSerializedNFTPair,
-  removeSerializedNFTPair
+  removeSerializedNFTPair,
+  setARECConfirmCounter
 } from './actions'
 
 const currentTimestamp = () => new Date().getTime()
@@ -61,6 +62,7 @@ export interface UserState {
 
   timestamp: number
   URLWarningVisible: boolean
+  ARECConfirmCounter: number
 }
 
 export function pairKey(token0Address: string, token1Address: string) {
@@ -78,7 +80,8 @@ export const initialState: UserState = {
   pairs: {},
   nftPairs: {},
   timestamp: currentTimestamp(),
-  URLWarningVisible: true
+  URLWarningVisible: true,
+  ARECConfirmCounter: 0
 }
 
 export default createReducer(initialState, builder =>
@@ -183,4 +186,9 @@ export default createReducer(initialState, builder =>
     .addCase(toggleURLWarning, state => {
       state.URLWarningVisible = !state.URLWarningVisible
     })
+
+    .addCase(setARECConfirmCounter, (state, action) => {
+      state.ARECConfirmCounter = action.payload.ConfirmCounter
+    })
+    
 )

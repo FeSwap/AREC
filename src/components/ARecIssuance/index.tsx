@@ -10,8 +10,9 @@ import { InputPanel, Container } from '../CurrencyInputPanel'
 export const ARECDate = styled.input.attrs({
   type: "date"
 })`
-  border: solid 1px black;
-  border-radius: 6px;
+  border: solid 1px;
+  border-color: ${({theme}) => theme.primaryText1};
+    border-radius: 6px;
   font-size: 20px;
   padding: 0.2rem 0.8rem 0.2rem 0.8rem; 
   margin: 0.5rem 0.4rem 0.5rem 0.4rem;
@@ -23,21 +24,6 @@ export const ARECDate = styled.input.attrs({
     }
   }
 `
-
-/*
-:not([disabled])
-
-  &:disabled {
-    border-color: ${({theme}) => theme.primary5};
-  }  
-
-
-&:disabled {
-  background-color: ${({ theme }) => theme.primary1};
-  opacity: 50%;
-  cursor: auto;
-}
-*/
 
 interface DateInputInterface {
   onChangeDate?: (date: string) => void,
@@ -67,6 +53,15 @@ const LabelRow = styled.div`
   }
 `
 
+const DateRow = styled.div`
+  display: grid;
+  width: 100%;
+  grid-template-columns: 1fr 20px 1fr;
+  column-gap: 6px;
+  align-items: start;
+  justify-content: space-between;
+`
+
 interface ARECIssuanceDateProps {
   startDate: string
   endDate: string
@@ -90,11 +85,7 @@ export default function ARECIssuanceDate({
 }: ARECIssuanceDateProps) {
 
   const theme = useContext(ThemeContext)
-
-  // startDate 2022-11-01
-  console.log("AAAAAAA", startDate, active)
-
-  return (
+   return (
     <InputPanel id={id}>
       <Container>
 
@@ -124,14 +115,3 @@ export default function ARECIssuanceDate({
     </InputPanel>
   )
 }
-
-//<RowBetween style={{padding: '0.75rem 0.2rem 0.75rem 0.2rem', height:'60px', alignItems: 'center'}}>
-//      </RowBetween>
-const DateRow = styled.div`
-  display: grid;
-  width: 100%;
-  grid-template-columns: 1fr 20px 1fr;
-  column-gap: 6px;
-  align-items: start;
-  justify-content: space-between;
-`

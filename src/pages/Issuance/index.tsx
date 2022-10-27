@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState, useCallback } from 'react'
 //import { ArrowDown } from 'react-feather'
 //import ReactGA from 'react-ga'
 import { Text } from 'rebass'
@@ -29,6 +29,7 @@ import { CurrencyAmount } from '@feswap/sdk'
 import { BigNumber } from 'ethers'
 import { calculateGasMargin } from '../../utils'
 import { TransactionResponse } from '@ethersproject/providers'
+import { shortenAddress, shortenCID } from '../../utils'
 //import { darken } from 'polished'
 
 import { useActiveWeb3React } from '../../hooks'
@@ -42,6 +43,7 @@ import ARECIssuanceDate from '../../components/ARecIssuance'
 import { Container } from '../../components/CurrencyInputPanel'
 import { DateTime } from 'luxon'
 import useTransactionDeadline from '../../hooks/useTransactionDeadline'
+import { RECRequest } from '../../state/issuance/hooks'
 
 //import {
 //  useSwapActionHandlers,
@@ -65,27 +67,6 @@ export interface ProfileAREC {
   readonly region:          string;      
   readonly url:             string;
 }
-
-export interface RECRequest {
-  issuer:       string
-  startTime:    BigNumber;
-  endTime:      BigNumber;
-  amountREC:    BigNumber;
-  cID:          string;
-  region:       string;      
-  url:          string;
-  memo:         string;
-} 
-
-export interface SignatureToPay {
-  token:      string
-  value:      BigNumber;
-  deadline:   BigNumber;  
-  v:          BigNumber;
-  r:          BigNumber;
-  s:          BigNumber;              
-}
-
 
  function IssanceHelpInfo() {
   return (<>
@@ -172,9 +153,6 @@ function OverallAREC() {
     )
   }
 
-
-
-
 //export default function Swap({ history }: RouteComponentProps) {
 export default function Issauce() {
 
@@ -208,11 +186,8 @@ export default function Issauce() {
     region:           "China",                
     url:              ""        
   }
-
-
-
-//  const [startDate, setStartDate ] = useState(dateNow)
- 
+  
+  const [dateSelected, setDateSelected ] = useState(false)
 
   const amountTotalRE: number = Number(recProfile.amountTotalRE)
   const enableRECMint = amountTotalRE>0 ? true: false
@@ -225,50 +200,15 @@ export default function Issauce() {
   const startEndString: string = amountTotalRE>0 ? recProfile.startEnd : dateNow
   const [endDate, setEndtDate ] = useState(startEndString)
 
-  console.log("startDate, endDate dateNow", startDate, endDate, dateNow, minDate)
-
-  // swap state
-
-  /*
-  const { typedValue, recipient } = useSwapState()
-  const {
-    FeswTrade,
-    currencies,
-    inputError: swapInputError
-  } = useDerivedSwapInfo()
-
- 
-  const { wrapType, } = useWrapCallback(
-    currencies[Field.INPUT],
-    currencies[Field.OUTPUT],
-    typedValue
-  )
-  const showWrap: boolean = wrapType !== WrapType.NOT_APPLICABLE
-  const { address: recipientAddress } = useENSAddress(recipient)
-
-  const trade = showWrap ? undefined : FeswTrade
-
-  const { onUserInput } = useSwapActionHandlers()
-  const isValid = !swapInputError
-*/
+  const handleSetEndtDate = useCallback((endDate:string) => {
+    setEndtDate(endDate)
+    setDateSelected(true)
+    setSignatureData(null)
+  }, [setEndtDate])
 
   const swapInputError:string|undefined = undefined
   const isValid = true
   const priceImpactSeverity = 2
-//  const trade: any = undefined
-
-
-  // check whether the user has approved the router on the input token
-  //const [approval, approveCallback] = useApproveCallbackFromTrade(trade, allowedSlippage)
-
-
-  // the callback to execute the swap
-  //const { callback: swapCallback, error: swapCallbackError } = useSwapCallback(trade, allowedSlippage, recipient)
-
-  //const [singleHopOnly] = useUserSingleHopOnly()
-
-  
-
 
   const arkreenToken = useCurrency(arkreenTokenAddress)
  
@@ -294,10 +234,8 @@ export default function Issauce() {
   }, [approval, approvalSubmitted])
 
 
-  //console.log("BBBBBBBBBBBB", arkreenTokenContract, library, deadline, arkreenToken, approvalAmount)
-
-
-  const [{ showConfirm, recRequestToConfirm, IssueErrorMessage, attemptingTxn, txHash }, setRECIssauncetate] = useState<{
+  // const [{ showConfirm, recRequestToConfirm, IssueErrorMessage, attemptingTxn, txHash }, setRECIssauncetate] = useState<{
+  const [{ showConfirm, recRequestToConfirm }, setRECIssauncetate] = useState<{
     showConfirm: boolean
     recRequestToConfirm: RECRequest | undefined
     attemptingTxn: boolean
@@ -311,10 +249,10 @@ export default function Issauce() {
     txHash: undefined
   })
 
+  //console.log("showConfirm, recRequestToConfirm, IssueErrorMessage, attemptingTxn, txHash", 
+  //            showConfirm, recRequestToConfirm, IssueErrorMessage, attemptingTxn, txHash)
 
-  console.log(showConfirm, recRequestToConfirm, IssueErrorMessage, attemptingTxn, txHash)
   const addTransaction = useTransactionAdder()
-
 
   const RECIssuer = '0x576Ab950B8B3B18b7B53F7edd8A47986a44AE6F4'
   const recRequest: RECRequest = {
@@ -328,21 +266,19 @@ export default function Issauce() {
     memo:       ''
   }
 
-
+//  amountREC:  BigNumber.from(Number(recProfile.amountTotalRE)*1000000),
+  
+  console.log("recRequest AAAAAAAAA",  recRequest.amountREC, recRequest.amountREC.toString())
 
   async function handleRECRequest() {
-    console.log( "XXXXXXXXXXXX", arkreenRECIssuanceContract, signatureData, deadline)
 
-
-    if(!arkreenRECIssuanceContract || !signatureData || !deadline || !approvalAmount) {
-      console.log( "CCCCCC", arkreenRECIssuanceContract, signatureData, deadline)
+    if(!arkreenRECIssuanceContract || !signatureData || !deadline || !approvalAmount || !recRequest.issuer) 
       return
-    }
 
-    const signatureToPay =  [ arkreenTokenAddress, approvalAmount.raw.toString(), deadline,
+    const signatureToPay = [ arkreenTokenAddress, approvalAmount.raw.toString(), signatureData.deadline,
                               signatureData.v, signatureData.r, signatureData.s]
 
-    console.log( "ZZZZZZZZZZZZZZZZZ signatureToPay", signatureToPay)
+    console.log("signatureToPay", signatureToPay)                              
 
     setRECIssauncetate({ attemptingTxn: true, recRequestToConfirm, showConfirm, IssueErrorMessage: undefined, txHash: undefined })
     await arkreenRECIssuanceContract.estimateGas['mintRECRequest']( recRequest, signatureToPay)
@@ -350,8 +286,10 @@ export default function Issauce() {
         await arkreenRECIssuanceContract.mintRECRequest(recRequest, signatureToPay, 
                                           { gasLimit: calculateGasMargin(estimatedGasLimit) })
         .then((response: TransactionResponse) => {
+          setDateSelected(false)
+          setSignatureData(null)
           addTransaction(response, {
-            summary: `mintRECRequest from ${recRequest?.issuer}`
+            summary: `Request AREC issued by ${shortenAddress(recRequest.issuer,6)}`
           })
           setRECIssauncetate({ attemptingTxn: false, recRequestToConfirm, showConfirm, IssueErrorMessage: undefined, txHash: response.hash })
         })
@@ -366,14 +304,12 @@ export default function Issauce() {
         })
       })
       .catch((error: any) => {
-        console.log("DDDDDDDDDD", error)
+        console.log("Error of mintRECRequest estimateGas tx:", error)
         setRECIssauncetate({attemptingTxn: false, recRequestToConfirm, showConfirm, IssueErrorMessage: error.message, txHash: undefined })
-
       })
     }
 
-
-  async function onAttemptToApprove() {
+    async function onAttemptToApprove() {
 
     if (!arkreenTokenContract || !library || !deadline) throw new Error('missing dependencies')
     if (!approvalAmount) throw new Error('missing liquidity amount')
@@ -435,31 +371,13 @@ export default function Issauce() {
         }
       })
   }
+   
   
-  
-  // errors
-  //const [showInverted, setShowInverted] = useState<boolean>(false)
-
-
   // show approve flow when: no error on inputs, not approved or pending, or approved in current session
   // never show if price impact is above threshold in non expert mode
-  const showApproveFlow = !(swapInputError || !arkreenTokenContract || !library || !approvalAmount)
+  const showApproveFlow = !(swapInputError || !arkreenTokenContract || !library || !approvalAmount || !dateSelected)
 
-  console.log("signatureData", swapInputError, signatureData, showApproveFlow)
-
-
-//  const handleConfirmDismiss = useCallback(() => {
-//    setSwapState({ showConfirm: false, tradeToConfirm, attemptingTxn, swapErrorMessage, txHash })
-//    // if there was a tx hash, we want to clear the input
-//    if (txHash) {
-//      onUserInput(Field.INPUT, '')
-//    }
-//  }, [attemptingTxn, onUserInput, swapErrorMessage, tradeToConfirm, txHash])
-
-//  const handleAcceptChanges = useCallback(() => {
-//    setSwapState({ tradeToConfirm: trade, swapErrorMessage, txHash, attemptingTxn, showConfirm })
-//  }, [attemptingTxn, showConfirm, swapErrorMessage, trade, txHash])
-
+  const shortCID = shortenCID(recProfile.cID)
 
 //  <PageHeader header={'Swap'}> <SettingsIcon /> </PageHeader>
 // <CardNoise />
@@ -493,7 +411,7 @@ onDismiss={handleConfirmDismiss}
             <ARECIssuanceDate active={enableRECMint}  
               minDate= {minDate} maxDate= {enableRECMint ? recProfile.startEnd : undefined}
               startDate= {startDate}
-              endDate = {endDate} onChangeDate={setEndtDate} id="issuace_date" >
+              endDate = {endDate} onChangeDate={handleSetEndtDate} id="issuace_date" >
                 <OverallAREC />
             </ARECIssuanceDate>
          
@@ -521,6 +439,15 @@ onDismiss={handleConfirmDismiss}
                           color={(signatureData !== null) ? theme.primary1: theme.text2}> 36.00 AKRE </Text>
                   </RowBetween>
 
+                  { (signatureData !== null) && (
+                    <RowBetween align="center" height='20px'>
+                      <Text fontWeight={500} fontSize={14} color={theme.text2}> AREC cID: </Text>
+                      <Text fontWeight={700} fontSize={14} color={theme.primary1}> 
+                        {shortCID}
+                      </Text>
+                    </RowBetween>
+                  )}
+
               </AutoColumn>
             </Container>              
             
@@ -528,6 +455,8 @@ onDismiss={handleConfirmDismiss}
           <BottomGrouping>
             {!account ? (
               <ButtonLight onClick={toggleWalletModal}>Connect Wallet</ButtonLight>
+            ) :  !dateSelected ? (
+              <ButtonLight> Select End AREC Date </ButtonLight>
             ) : (!arkreenTokenContract || !library || !approvalAmount ) ? (
               <ButtonError disabled={true} error={false}>
                 <Text fontSize={20} fontWeight={500}>

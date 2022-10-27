@@ -4,7 +4,7 @@ import { useSponsorContract, useNftBidContract, useFeswFactoryContract } from '.
 import { useCallback, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useActiveWeb3React } from '../../hooks'
-import { isAddress, calculateGasMargin, WEI_DENOM_FRACTION, ONE_OVER_HUNDREAD } from '../../utils'
+import { isAddress, WEI_DENOM_FRACTION, ONE_OVER_HUNDREAD } from '../../utils'
 import { AppDispatch, AppState } from '../index'
 import { useCurrencyBalances } from '../wallet/hooks'
 import { setNftRecipient, typeNftInput, typeTriggerRate, selectNftCurrency, USER_BUTTON_ID } from './actions'
@@ -13,8 +13,6 @@ import { useSingleCallResult, useSingleContractMultipleData, NEVER_RELOAD } from
 import { Field, WALLET_BALANCE, USER_UI_INFO } from './actions'
 import { tryParseAmount } from '../swap/hooks'
 import { useMemo } from 'react'
-import { useTransactionAdder } from '../transactions/hooks'
-import { TransactionResponse } from '@ethersproject/providers'
 import { useCurrency } from '../../hooks/Tokens'
 import { ZERO_ADDRESS } from '../../constants'
 import { wrappedCurrency } from '../../utils/wrappedCurrency'
@@ -331,7 +329,7 @@ export function useDerivedNftInfo(): {
 
   const nftBidPrice: CurrencyAmount | undefined = useMemo(() => {
       if ((!feswaPairINfo) || (feswaPairINfo?.nftOwner === ZERO_ADDRESS)) return undefined
-//      if(feswaPairINfo?.pairInfo.poolState === NFT_BID_PHASE.PoolHolding) return undefined
+  //      if(feswaPairINfo?.pairInfo.poolState === NFT_BID_PHASE.PoolHolding) return undefined
       return CurrencyAmount.ether(feswaPairINfo?.pairInfo.currentPrice.toString())
     },[feswaPairINfo])
   
@@ -409,34 +407,4 @@ export function useDerivedNftInfo(): {
     nftPairToSave,
     inputError,
   }
-}
-
-export function useSponsorCallback(
-  sponsorAmount: CurrencyAmount | undefined
-): {
-  sponsorCallback: () => Promise<string>
-} {
-  // get claim data for this account
-  const { library, chainId, account } = useActiveWeb3React()
-  const sponsorContract = useSponsorContract()
-
-  // used for popup summary
-  const addTransaction = useTransactionAdder()
-
-  const sponsorCallback = async function() {
-    if (!sponsorAmount || !account || !library || !chainId|| !sponsorContract ) return
-
-   return sponsorContract.estimateGas['Sponsor'](account, {}).then(estimatedGasLimit => {
-      return sponsorContract
-        .Sponsor(account, { value: sponsorAmount.raw, gasLimit: calculateGasMargin(estimatedGasLimit) })
-        .then((response: TransactionResponse) => {
-          addTransaction(response, {
-            summary: `Sponsored ${sponsorAmount?.toSignificant(6)} ETH`,
-          })
-          return response.hash
-        })
-    })
-  }
-
-  return { sponsorCallback }
 }

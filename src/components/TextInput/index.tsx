@@ -31,10 +31,12 @@ const Input = styled.input<{ error?: boolean; fontSize?: string }>`
   }
 `
 
-const TextAreaInput = styled.textarea<{ error?: boolean; fontSize?: string }>`
+export const TextAreaInput = styled.textarea<{ error?: boolean; fontSize?: string; borderRadius?: string }>`
   font-size: ${({ fontSize }) => fontSize || '1.25rem'};
   outline: none;
-  border: none;
+  border: ${({ borderRadius}) => borderRadius ? '1px solid': 'none'};
+  border-color: ${({ borderRadius, theme }) => borderRadius ? theme.bg5: 'none'};
+  border-radius: ${({ borderRadius }) => borderRadius ? '6px': 'none'};
   flex: 1 1 auto;
   width: 0;
   resize: none;
@@ -46,7 +48,7 @@ const TextAreaInput = styled.textarea<{ error?: boolean; fontSize?: string }>`
   font-weight: 500;
   width: 100%;
   line-height: 1.2;
-  padding: 0px;
+  padding: ${({ borderRadius }) => borderRadius ? '0.4rem 1rem 0.4rem 1rem': '0px'};;
   -webkit-appearance: textfield;
 
   ::-webkit-search-decoration {
@@ -107,12 +109,16 @@ export const ResizingTextArea = memo(
     onUserInput,
     placeholder,
     fontSize,
+    small = false,
+    borderRadius
   }: {
     className?: string
     value: string
     onUserInput: (value: string) => void
     placeholder: string
     fontSize: string
+    small?: boolean
+    borderRadius?: string
   }) => {
     const inputRef = useRef<HTMLTextAreaElement>(document.createElement('textarea'))
 
@@ -127,12 +133,13 @@ export const ResizingTextArea = memo(
 
     return (
       <TextAreaInput
-        style={{ height: 'auto', minHeight: '500px' }}
+        style={{ height: 'auto', minHeight: small ? '6rem': '500px' }}
         className={className}
         autoComplete="off"
         autoCorrect="off"
         autoCapitalize="off"
         spellCheck="false"
+        borderRadius={borderRadius}
         placeholder={placeholder || ''}
         onChange={handleInput}
         value={value}

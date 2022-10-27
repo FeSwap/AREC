@@ -72,7 +72,8 @@ export default function AddressInputPanel({
   id,
   value,
   onChange,
-  placeholder
+  placeholder,
+  simple = false
 }: {
   id?: string
   // the typed string value
@@ -80,11 +81,13 @@ export default function AddressInputPanel({
   // triggers whenever the typed value changes
   onChange: (value: string) => void
   placeholder?: string
+  simple?:  boolean
 }) {
   const { chainId } = useActiveWeb3React()
 //  const theme = useContext(ThemeContext)
 
   const { address, loading, name } = useENS(value)
+  const error = Boolean(value.length > 0 && !loading && !address)
 
   const handleInput = useCallback(
     event => {
@@ -95,7 +98,6 @@ export default function AddressInputPanel({
     [onChange]
   )
 
-  const error = Boolean(value.length > 0 && !loading && !address)
   const placeHolder = placeholder ?? (feswType(chainId) === "FESW" ? "Wallet Address or ENS name" : "Wallet Address")
 
 //  <TYPE.black color={theme.text2} fontWeight={500} fontSize={15}>
@@ -103,17 +105,19 @@ export default function AddressInputPanel({
 //  </TYPE.black>
 
   return (
-    <InputPanel id={id} style={{borderRadius:'8px'}}>
-      <ContainerRow error={error}>
-        <InputContainer>
+    <InputPanel id={id} style={{borderRadius: simple ? '6px': '8px'}}>
+      <ContainerRow error={error} style={{borderRadius: simple ? '6px': '8px'}}>
+        <InputContainer style={{padding: simple ? '0.4rem 1rem': '1em'}}>
           <AutoColumn gap="md">
-            <RowBetween>
-              {address && chainId && (
-                <ExternalLink href={getExplorerLink(chainId, name ?? address, 'address')} style={{ fontSize: '15px' }}>
-                  (View on Explorer)
-                </ExternalLink>
-              )}
-            </RowBetween>
+            {!simple && (
+              <RowBetween>
+                {address && chainId && (
+                  <ExternalLink href={getExplorerLink(chainId, name ?? address, 'address')} style={{ fontSize: '15px' }}>
+                    (View on Explorer)
+                  </ExternalLink>
+                )}
+              </RowBetween>
+            )}
             <Input
               className="recipient-address-input"
               type="text"
@@ -126,6 +130,7 @@ export default function AddressInputPanel({
               pattern="^(0x[a-fA-F0-9]{40})$"
               onChange={handleInput}
               value={value}
+              style= {{fontSize: simple ? '0.9rem': '1.25rem'}}
             />
           </AutoColumn>
         </InputContainer>
@@ -133,3 +138,41 @@ export default function AddressInputPanel({
     </InputPanel>
   )
 }
+
+export function MessageInputPanel({
+  id,
+  value,
+  onUserInput,
+  placeholder,
+}: {
+  id?: string
+  value: string
+  // triggers whenever the typed value changes
+  onUserInput: (value: string) => void
+  placeholder?: string
+}) {
+  return (
+    <InputPanel id={id} style={{borderRadius: '6px'}}>
+      <ContainerRow error={false} style={{borderRadius: '6px'}}>
+        <InputContainer style={{padding: '0.4rem 1rem'}}>
+          <AutoColumn gap="md">
+            <Input
+              className="recipient-address-input"
+              type="text"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck="false"
+              placeholder={placeholder}
+              onChange={(event)=> onUserInput(event.target.value)}
+              value={value}
+              style= {{fontSize: '0.9rem'}}
+            />
+          </AutoColumn>            
+        </InputContainer>
+      </ContainerRow>
+    </InputPanel>
+  )
+}
+
+

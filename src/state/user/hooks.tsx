@@ -23,7 +23,8 @@ import {
   toggleURLWarning,
   updateUserSingleHopOnly,
   addSerializedNFTPair,
-  removeSerializedNFTPair
+  removeSerializedNFTPair,
+  setARECConfirmCounter
 } from './actions'
 
 import { pairKey } from './reducer'
@@ -76,6 +77,24 @@ export function useDarkModeManager(): [boolean, () => void] {
 
 export function useIsExpertMode(): boolean {
   return useSelector<AppState, AppState['user']['userExpertMode']>(state => state.user.userExpertMode)
+}
+
+export function useGetARECConfirmCounter(): number {
+  return useSelector<AppState, AppState['user']['ARECConfirmCounter']>(state => state.user.ARECConfirmCounter)
+}
+
+export function useSetARECConfirmCounter(): (ConfirmCounter: number) => void {
+  const dispatch = useDispatch<AppDispatch>()
+  const oldCounter = useGetARECConfirmCounter()
+
+  return useCallback(
+    (ConfirmCounter: number) => {
+      if( (oldCounter === undefined) || (ConfirmCounter > oldCounter )) {
+        dispatch(setARECConfirmCounter({ ConfirmCounter }))
+      }
+    },
+    [dispatch, oldCounter]
+  )
 }
 
 export function useExpertModeManager(): [boolean, () => void] {

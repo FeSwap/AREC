@@ -25,6 +25,8 @@ import UNISOCKS_ABI from '../constants/abis/unisocks.json'
 import WETH_ABI from '../constants/abis/weth.json'
 import ArkreenToken_ABI from '../constants/abis/ArkreenToken.json'
 import ArkreenRECIssuance_ABI from '../constants/abis/ArkreenRECIssuance.json'
+import ArkreenRECToken_ABI from '../constants/abis/ArkreenRECToken.json'
+import ArkreenRetirement_ABI from '../constants/abis/ArkreenRetirement.json'
 
 import { MULTICALL_ABI, MULTICALL_NETWORKS } from '../constants/multicall'
 import { getContract } from '../utils'
@@ -158,14 +160,23 @@ export function useSocksController(): Contract | null {
   )
 }
 
-export const arkreenTokenAddress    = "0x54e1c534f59343c56549c76d1bdccc8717129832"
-export const arkreenIssuanceAddress = "0x95f56340889642a41b913c32d160d2863536e073"
+export const arkreenTokenAddress      = "0x54e1c534f59343c56549c76d1bdccc8717129832"
+export const arkreenIssuanceAddress   = "0x95f56340889642a41b913c32d160d2863536e073"
+export const arkreenRetirementAddress = "0x5C653b445BE2bdEB6f8f3CD099FC801865Cab835"
+export const ARECTokenAddress         = "0xb0c9dd915f62d0a37792fd2ce497680e909d8c0f"
 
 export function useArkreenTokenContract(withSignerIfPossible?: boolean): Contract | null {
   return useContract(arkreenTokenAddress, ArkreenToken_ABI, withSignerIfPossible)
+}
+
+export function useArkreenRECTokenContract(withSignerIfPossible?: boolean): Contract | null {
+  return useContract(ARECTokenAddress, ArkreenRECToken_ABI, withSignerIfPossible)
 }
 
 export function useRECIssuanceContract(withSignerIfPossible?: boolean): Contract | null {
   return useContract(arkreenIssuanceAddress, ArkreenRECIssuance_ABI, withSignerIfPossible)
 }
 
+export function useArkreenRetirementContract(withSignerIfPossible?: boolean): Contract | null {
+  return useContract(arkreenRetirementAddress, ArkreenRetirement_ABI, withSignerIfPossible)
+}

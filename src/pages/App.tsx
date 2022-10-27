@@ -31,11 +31,14 @@ import Nft from './Nft'
 import Issuance from './Issuance'
 import Retirement from './Retirement'
 import Liquidize from './Liquidize'
+import RECManager from './RECManager'
+import MintCertificate from './Certificate'
+import Offset from './Offset'
 
 import CreateProposal from './CreateProposal'
 import {RedirectNftCheckSingleId, RedirectNftCheckTwoIds} from './Nft/redirects'
 import CreatePairByNft from './CreatePair'
-//import Sponsor from './Sponsor'
+import Sponsor from './Sponsor'
 import { RedirectPathToSwapOnly, RedirectToSwap } from './Swap/redirects'
 //import { OpenClaimAddressModalAndRedirectToSwap, RedirectPathToSwapOnly, RedirectToSwap } from './Swap/redirects'
 
@@ -125,6 +128,10 @@ export default function App() {
               <Route exact strict path="/Issuance" component={Issuance} />
               <Route exact strict path="/Liquidize" component={Liquidize} />
               <Route exact strict path="/Retirement" component={Retirement} />   
+              <Route exact strict path="/RECManager" component={RECManager} />  
+              <Route exact strict path="/Offset" component={Offset} />  
+              <Route exact strict path="/mintCert" component={MintCertificate} />  
+              <Route exact strict path="/sponsor" component={Sponsor} />              
               <Route exact strict path="/Test" component={Test} />              
               <Route exact strict path="/liquidity" component={Pool} />
               <Route exact strict path="/fesw" component={Earn} />

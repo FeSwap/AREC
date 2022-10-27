@@ -6,7 +6,7 @@ import { BasicLink } from '../Link'
 import { useMedia } from 'react-use'
 import { transparentize } from 'polished'
 import { withRouter } from 'react-router-dom'
-import { TrendingUp, PieChart, CheckCircle, LogOut, Repeat, 
+import { TrendingUp, PieChart, CheckCircle, LogOut, Repeat, Award, Heart,
           MessageCircle, BookOpen, Link2, List } from 'react-feather'
 // DollarSign, Link2, List
 import Link from '../Link'
@@ -135,23 +135,27 @@ function SideNav({ history }: RouteComponentProps) {
                   </Option>
                 </BasicLink>
                 <BasicLink to="/Issuance">
-                  <Option
-                    activeText={
-                      (history.location.pathname.split('/')[1] === 'tokens' ||
-                        history.location.pathname.split('/')[1] === 'token') ??
-                      undefined
-                    }
-                  >
+                  <Option activeText={(history.location.pathname.split('/')[1] === 'Issuance') ?? undefined}>
                     <CheckCircle size={18} style={{ marginRight: '.75rem' }} />
                     Issue AREC
                   </Option>
                 </BasicLink>
+
+                <BasicLink to="/Retirement">
+                  <Option
+                    activeText={
+                      (history.location.pathname.split('/')[1] === 'Retirement') ?? undefined
+                    }
+                  >
+                    <LogOut size={18} style={{ marginRight: '.75rem' }} />
+                    Retirement
+                  </Option>
+                </BasicLink>
+
                 <BasicLink to="/Liquidize">
                   <Option
                     activeText={
-                      (history.location.pathname.split('/')[1] === 'pairs' ||
-                        history.location.pathname.split('/')[1] === 'pair') ??
-                      undefined
+                      (history.location.pathname.split('/')[1] === 'Liquidize') ?? undefined
                     }
                   >
                     <PieChart size={18} style={{ marginRight: '.75rem' }} />
@@ -159,18 +163,19 @@ function SideNav({ history }: RouteComponentProps) {
                   </Option>
                 </BasicLink>
 
-                <BasicLink to="/Retirement">
-                  <Option
-                    activeText={
-                      (history.location.pathname.split('/')[1] === 'accounts' ||
-                        history.location.pathname.split('/')[1] === 'account') ??
-                      undefined
-                    }
-                  >
-                    <LogOut size={18} style={{ marginRight: '.75rem' }} />
-                    Retirement
+                <BasicLink to="/Offset">
+                  <Option activeText={(history.location.pathname.split('/')[1] === 'Offset') ?? undefined}>
+                    <Heart size={18} style={{ marginRight: '.75rem' }} />
+                    Offset
                   </Option>
                 </BasicLink>
+
+                <BasicLink to="/mintCert">
+                  <Option activeText={(history.location.pathname.split('/')[1] === 'mintCert') ?? undefined}>
+                    <Award size={18} style={{ marginRight: '.75rem' }} />
+                    Mint Certificate
+                  </Option>
+                </BasicLink>                
 
                 <BasicLink to="/swap">
                   <Option

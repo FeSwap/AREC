@@ -36,3 +36,6 @@ export const removeSerializedNFTPair = createAction<{ chainId: number; tokenAAdd
   'user/removeSerializedNFTPair'
 )
 export const toggleURLWarning = createAction<void>('app/toggleURLWarning')
+export const setARECConfirmCounter = createAction<{ConfirmCounter: number}>('user/setARECConfirmCounter')
+
+
