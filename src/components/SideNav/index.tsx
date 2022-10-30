@@ -141,14 +141,14 @@ function SideNav({ history }: RouteComponentProps) {
                   </Option>
                 </BasicLink>
 
-                <BasicLink to="/Retirement">
+                <BasicLink to="/Redeem">
                   <Option
                     activeText={
-                      (history.location.pathname.split('/')[1] === 'Retirement') ?? undefined
+                      (history.location.pathname.split('/')[1] === 'Redeem') ?? undefined
                     }
                   >
                     <LogOut size={18} style={{ marginRight: '.75rem' }} />
-                    Retirement
+                    Redeem
                   </Option>
                 </BasicLink>
 

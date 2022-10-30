@@ -21,7 +21,8 @@ import PageHeader from '../../components/PageHeader'
 //import {SettingsIcon} from '../../components/Settings'
 import {StyledPageCard} from '../../components/earn/styled'
 import { useTransactionAdder } from '../../state/transactions/hooks'
-import { useArkreenTokenContract, useRECIssuanceContract } from '../../hooks/useContract'
+import { useArkreenTokenContract, useRECIssuanceContract, 
+        arkreenTokenAddress, arkreenIssuanceAddress } from '../../hooks/useContract'
 import { splitSignature } from 'ethers/lib/utils'
 import { useCurrency } from '../../hooks/Tokens'
 import { tryParseAmount } from '../../state/swap/hooks'
@@ -70,11 +71,11 @@ export interface ProfileAREC {
 
  function IssanceHelpInfo() {
   return (<>
-            <Text> 1. Check your wallet is on Polygon. </Text>
+            <Text> 1. Connect your wallet on Polygon. </Text>
             <Text> 2. Input the start date and end date to issue AREC. </Text>
-            <Text> 3. Approve the issuace fee with your wallet.</Text>
+            <Text> 3. Approve the issuance fee with your wallet.</Text>
             <Text> 4. Check the indicated AREC issuance info.</Text>            
-            <Text> 5. Click <b>Issuace</b>, check and sign your AREC issuance request.</Text>
+            <Text> 5. Click <b>Mint AREC</b>, check and sign your AREC issuance request.</Text>
             <Text> 6. Waiting your AREC issuance been confirmed by Arkreen.</Text>
             <Text> <b>Remindings:</b> Your request maybe rejected by Arkreen for some reason.
                     In that case you can update your request, or cancel your request.</Text>
@@ -161,17 +162,7 @@ export default function Issauce() {
 
   // toggle wallet when disconnected
   const toggleWalletModal = useWalletModalToggle()
-
-  // for expert mode
-//  const toggleSettings = useToggleSettingsMenu()
-//  const [isExpertMode] = useExpertModeManager()
-
-  // get custom setting values for user
-  //const [allowedSlippage] = useUserSlippageTolerance()
-
   const dateNow = DateTime.now().toFormat("yyyy-MM-dd")
-  const arkreenTokenAddress = "0x54e1c534f59343c56549c76d1bdccc8717129832"
-  const arkreenIssuanceAddress = "0x95f56340889642a41b913c32d160d2863536e073"
 
   const recProfile : ProfileAREC = {
     startDate:        '2022-09-03',
@@ -233,24 +224,20 @@ export default function Issauce() {
     }
   }, [approval, approvalSubmitted])
 
-
-  // const [{ showConfirm, recRequestToConfirm, IssueErrorMessage, attemptingTxn, txHash }, setRECIssauncetate] = useState<{
-  const [{ showConfirm, recRequestToConfirm }, setRECIssauncetate] = useState<{
+  // const [{ showConfirm, txnToConfirm, IssueErrorMessage, attemptingTxn, txHash }, setARECTxnState] = useState<{
+  const [{ showConfirm, txnToConfirm }, setARECTxnState] = useState<{
     showConfirm: boolean
-    recRequestToConfirm: RECRequest | undefined
+    txnToConfirm: RECRequest | undefined
     attemptingTxn: boolean
     IssueErrorMessage: string | undefined
     txHash: string | undefined
   }>({
     showConfirm: false,
-    recRequestToConfirm: undefined,
+    txnToConfirm: undefined,
     attemptingTxn: false,
     IssueErrorMessage: undefined,
     txHash: undefined
   })
-
-  //console.log("showConfirm, recRequestToConfirm, IssueErrorMessage, attemptingTxn, txHash", 
-  //            showConfirm, recRequestToConfirm, IssueErrorMessage, attemptingTxn, txHash)
 
   const addTransaction = useTransactionAdder()
 
@@ -265,11 +252,7 @@ export default function Issauce() {
     url:        recProfile.url,
     memo:       ''
   }
-
-//  amountREC:  BigNumber.from(Number(recProfile.amountTotalRE)*1000000),
-  
-  console.log("recRequest AAAAAAAAA",  recRequest.amountREC, recRequest.amountREC.toString())
-
+ 
   async function handleRECRequest() {
 
     if(!arkreenRECIssuanceContract || !signatureData || !deadline || !approvalAmount || !recRequest.issuer) 
@@ -280,7 +263,7 @@ export default function Issauce() {
 
     console.log("signatureToPay", signatureToPay)                              
 
-    setRECIssauncetate({ attemptingTxn: true, recRequestToConfirm, showConfirm, IssueErrorMessage: undefined, txHash: undefined })
+    setARECTxnState({ attemptingTxn: true, txnToConfirm, showConfirm, IssueErrorMessage: undefined, txHash: undefined })
     await arkreenRECIssuanceContract.estimateGas['mintRECRequest']( recRequest, signatureToPay)
       .then(async(estimatedGasLimit) => {
         await arkreenRECIssuanceContract.mintRECRequest(recRequest, signatureToPay, 
@@ -291,7 +274,7 @@ export default function Issauce() {
           addTransaction(response, {
             summary: `Request AREC issued by ${shortenAddress(recRequest.issuer,6)}`
           })
-          setRECIssauncetate({ attemptingTxn: false, recRequestToConfirm, showConfirm, IssueErrorMessage: undefined, txHash: response.hash })
+          setARECTxnState({ attemptingTxn: false, txnToConfirm, showConfirm, IssueErrorMessage: undefined, txHash: response.hash })
         })
         .catch((error: any) => {
             // if the user rejected the tx, pass this along
@@ -305,7 +288,7 @@ export default function Issauce() {
       })
       .catch((error: any) => {
         console.log("Error of mintRECRequest estimateGas tx:", error)
-        setRECIssauncetate({attemptingTxn: false, recRequestToConfirm, showConfirm, IssueErrorMessage: error.message, txHash: undefined })
+        setARECTxnState({attemptingTxn: false, txnToConfirm, showConfirm, IssueErrorMessage: error.message, txHash: undefined })
       })
     }
 
@@ -472,11 +455,13 @@ onDismiss={handleConfirmDismiss}
                   altDisabledStyle={approval === ApprovalState.PENDING} // show solid button while waiting
                   confirmed={approval === ApprovalState.APPROVED}
                 >
-                  { signatureData !== null ? (
-                    'AKRE Approved'
-                  ) : (
-                    'Approve AKRE'
-                  )}
+                  <Text fontSize={20} fontWeight={500}>
+                    { signatureData !== null ? (
+                      'AKRE Approved'
+                    ) : (
+                      'Approve AKRE'
+                    )}
+                  </Text>
                 </ButtonConfirmed>
                 <ButtonError
                   onClick={() => handleRECRequest() }
@@ -485,7 +470,7 @@ onDismiss={handleConfirmDismiss}
                   disabled={ signatureData == null }
                   error={isValid && priceImpactSeverity > 2}
                 >
-                  <Text fontSize={16} fontWeight={500}>
+                  <Text fontSize={20} fontWeight={500}>
                     Mint AREC
                   </Text>
                 </ButtonError>
@@ -508,24 +493,3 @@ onDismiss={handleConfirmDismiss}
   )
 }
 
-//<AdvancedSwapDetailsDropdown trade={trade} />
-/*
-setRECIssauncetate({
-  recRequestToConfirm: undefined,
-  attemptingTxn: false,
-  IssueErrorMessage: undefined,
-  showConfirm: true,
-  txHash: undefined
-})
-*/
-
-/*
-<RowBetween marginTop="10px">
-<ButtonPrimary width="48%" onClick={() => {handleRECRequest()}}>
-  Mint AREC
-</ButtonPrimary>
-<ButtonPrimary width="48%" onClick={() => {handleRECRequest()}}>
-  Mint AREC
-</ButtonPrimary>
-</RowBetween>
-*/

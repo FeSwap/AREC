@@ -100,10 +100,6 @@ export default function AddressInputPanel({
 
   const placeHolder = placeholder ?? (feswType(chainId) === "FESW" ? "Wallet Address or ENS name" : "Wallet Address")
 
-//  <TYPE.black color={theme.text2} fontWeight={500} fontSize={15}>
-//  Recipient
-//  </TYPE.black>
-
   return (
     <InputPanel id={id} style={{borderRadius: simple ? '6px': '8px'}}>
       <ContainerRow error={error} style={{borderRadius: simple ? '6px': '8px'}}>
@@ -162,6 +158,7 @@ export function MessageInputPanel({
               autoComplete="off"
               autoCorrect="off"
               autoCapitalize="off"
+              maxLength={50}
               spellCheck="false"
               placeholder={placeholder}
               onChange={(event)=> onUserInput(event.target.value)}

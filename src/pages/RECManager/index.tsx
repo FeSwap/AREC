@@ -1,30 +1,16 @@
 import React, { useContext, useEffect, useState, useCallback } from 'react'
-//import React, { useContext, useEffect, useState, useCallback } from 'react'
-
-//import { ArrowDown } from 'react-feather'
-//import ReactGA from 'react-ga'
 import { Text } from 'rebass'
 import styled, { ThemeContext } from 'styled-components'
-//import AddressInputPanel from '../../components/AddressInputPanel'
 import { ButtonLight, ButtonPrimary} from '../../components/Button'
-//import { ButtonError, ButtonLight, ButtonConfirmed, ButtonPrimary } from '../../components/Button'
-
-//import Card from '../../components/Card'
 import Column, { AutoColumn } from '../../components/Column'
-//import ConfirmSwapModal from '../../components/swap/ConfirmSwapModal'
-//import CurrencyInputPanel from '../../components/CurrencyInputPanel'
 import { RowBetween, RowFixed } from '../../components/Row'
-//import AdvancedSwapDetailsDropdown from '../../components/swap/AdvancedSwapDetailsDropdown'
-//import confirmPriceImpactWithoutFee from '../../components/swap/confirmPriceImpactWithoutFee'
 import { BottomGrouping, Wrapper } from '../../components/swap/styleds'
-//import TradePrice from '../../components/swap/TradePrice'
 import ProgressSteps from '../../components/ProgressSteps'
 import PageHeader from '../../components/PageHeader'
-//import {SettingsIcon} from '../../components/Settings'
 import {StyledPageCard} from '../../components/earn/styled'
 import { useTransactionAdder } from '../../state/transactions/hooks'
-import { useArkreenTokenContract, useRECIssuanceContract, arkreenTokenAddress } from '../../hooks/useContract'
-//import { splitSignature } from 'ethers/lib/utils'
+import { useArkreenTokenContract, useRECIssuanceContract, 
+        arkreenTokenAddress, arkreenIssuanceAddress } from '../../hooks/useContract'
 import { useCurrency } from '../../hooks/Tokens'
 import { tryParseAmount } from '../../state/swap/hooks'
 import { CurrencyAmount } from '@feswap/sdk'
@@ -33,32 +19,16 @@ import { calculateGasMargin } from '../../utils'
 import { TransactionResponse } from '@ethersproject/providers'
 import { shortenAddress, shortenCID } from '../../utils'
 import { useGetPendingARECList } from '../../state/issuance/hooks'
-
-//import { darken } from 'polished'
-
 import { useActiveWeb3React } from '../../hooks'
 import { ApprovalState, useApproveCallback } from '../../hooks/useApproveCallback'
-//import useENSAddress from '../../hooks/useENSAddress'
-//import { useSwapCallback } from '../../hooks/useSwapCallback'
-//import useWrapCallback, { WrapType } from '../../hooks/useWrapCallback'
 import { useWalletModalToggle } from '../../state/application/hooks'
-//import { Field } from '../../state/swap/actions'
-//import ARECIssuanceDate from '../../components/ARecIssuance'
 import { Container } from '../../components/CurrencyInputPanel'
 import { DateTime } from 'luxon'
-//import useTransactionDeadline from '../../hooks/useTransactionDeadline'
 import { TYPE } from '../../theme'
-import { RECData, REC_STARUS } from '../../state/issuance/hooks'
-//import { CheckCircle } from 'react-feather'
-
-//import {
-//  useSwapActionHandlers,
-//  } from '../../state/swap/hooks'
-//import { useExpertModeManager } from '../../state/user/hooks'
-
+import { RECData, REC_STARUS, RECRequest } from '../../state/issuance/hooks'
 import AppBody from '../AppBody'
-// import Loader from '../../components/Loader'
 import QuestionHelper from '../../components/QuestionHelper'
+import { ARECSelect } from '../../components/ARecIssuance'
 
 export interface ProfileAREC {
   readonly startDate:       string
@@ -74,28 +44,14 @@ export interface ProfileAREC {
   readonly url:             string;
 }
 
-export interface RECRequest {
-  issuer:       string
-  startTime:    BigNumber;
-  endTime:      BigNumber;
-  amountREC:    BigNumber;
-  cID:          string;
-  region:       string;      
-  url:          string;
-  memo:         string;
-} 
-
-
- function IssanceHelpInfo( ) {
+function ManagerHelpInfo( ) {
   return (<>
-            <Text> 1. Check your wallet is on Polygon. </Text>
-            <Text> 2. Input the start date and end date to issue AREC. </Text>
-            <Text> 3. Approve the issuace fee with your wallet.</Text>
-            <Text> 4. Check the indicated AREC issuance info.</Text>            
-            <Text> 5. Click <b>Issuace</b>, check and sign your AREC issuance request.</Text>
-            <Text> 6. Waiting your AREC issuance been confirmed by Arkreen.</Text>
-            <Text> <b>Remindings:</b> Your request maybe rejected by Arkreen for some reason.
-                    In that case you can update your request, or cancel your request.</Text>
+            <Text> Confirm AREC issuance: </Text>
+            <Text> <b>1.</b> Connect your wallet on Polygon. </Text>
+            <Text> <b>2.</b> Select the AREC NFT to confirm. </Text>
+            <Text> <b>3.</b> Check the selected ARE info.</Text>            
+            <Text> <b>4.</b> Click <b>Confirm AREC NFT</b>, check and sign your confirm transaction.</Text>
+            <Text> <b>Remindings:</b> Only AREC issuers are allowed for this service.</Text>
           </>
         )
   }
@@ -106,8 +62,6 @@ const ARECContainer = styled.div`
   padding: 0.3rem 0.6rem 0.3rem 0.6rem;
   background: transparent;
 `
-
-//box-shadow: inset 0px 0px 8px #06c;
 
 function DetailedARECInfo({recData}:{recData: RECData}) {
   const theme = useContext(ThemeContext)
@@ -184,16 +138,10 @@ export default function RECManager() {
   const toggleWalletModal = useWalletModalToggle()
 
 
-  const { numberOfARECNft, 
-          allARECInfo, 
+  const { allARECInfo, 
           allARECNftTokensID, 
         } = useGetPendingARECList()
-
-  console.log("allARECInfo", numberOfARECNft, allARECInfo, allARECNftTokensID)
-
-  const arkreenTokenAddress = "0x54e1c534f59343c56549c76d1bdccc8717129832"
-  const arkreenIssuanceAddress = "0x95f56340889642a41b913c32d160d2863536e073"
-
+ 
   const recProfile : ProfileAREC = {
     startDate:        '2022-09-03',
     startEnd:         '2022-10-18',
@@ -209,18 +157,12 @@ export default function RECManager() {
   }
   
   const [dateSelected, setDateSelected ] = useState(false)
-
-
   const swapInputError:string|undefined = undefined
-
-
   const arkreenToken = useCurrency(arkreenTokenAddress)
- 
+
   const arkreenTokenContract = useArkreenTokenContract(true)
   const arkreenRECIssuanceContract = useRECIssuanceContract(true)
   
-  //const deadline = useTransactionDeadline()         // custom from users settings
-
   const approvalAmount: CurrencyAmount | undefined = tryParseAmount(recProfile.feePayToMint, arkreenToken??undefined)
 
   const [signatureData ] = useState<{ v: number; r: string; s: string; deadline: number } | null>(null)
@@ -238,23 +180,20 @@ export default function RECManager() {
   }, [approval, approvalSubmitted])
 
 
-  // const [{ showConfirm, recRequestToConfirm, IssueErrorMessage, attemptingTxn, txHash }, setRECIssauncetate] = useState<{
-  const [{ showConfirm, recRequestToConfirm }, setRECIssauncetate] = useState<{
+  // const [{ showConfirm, txnToConfirm, IssueErrorMessage, attemptingTxn, txHash }, setARECTxnState] = useState<{
+  const [{ showConfirm, txnToConfirm }, setARECTxnState] = useState<{
     showConfirm: boolean
-    recRequestToConfirm: RECRequest | undefined
+    txnToConfirm: RECRequest | undefined
     attemptingTxn: boolean
     IssueErrorMessage: string | undefined
     txHash: string | undefined
   }>({
     showConfirm: false,
-    recRequestToConfirm: undefined,
+    txnToConfirm: undefined,
     attemptingTxn: false,
     IssueErrorMessage: undefined,
     txHash: undefined
   })
-
-  //console.log("showConfirm, recRequestToConfirm, IssueErrorMessage, attemptingTxn, txHash", 
-  //            showConfirm, recRequestToConfirm, IssueErrorMessage, attemptingTxn, txHash)
 
   const addTransaction = useTransactionAdder()
 
@@ -274,10 +213,8 @@ export default function RECManager() {
 
     const onARECSelect = useCallback( (arecSelect) => {
       setARECSelected(arecSelect.target.value)
-   },[setARECSelected])
+    },[setARECSelected])
   
-   console.log("arecSelected, setARECSelected", arecSelected, setARECSelected)
-
     async function handleRECCertify() {
 
       if((!arkreenRECIssuanceContract) || (arecSelected === undefined))
@@ -285,16 +222,12 @@ export default function RECManager() {
         console.log("arkreenRECIssuanceContract",  arkreenRECIssuanceContract)
         return
       }
-//      const signatureToPay =  [ arkreenTokenAddress, approvalAmount.raw.toString(), signatureData.deadline,
-//                                signatureData.v, signatureData.r, signatureData.s]
-  
-//      console.log("signatureToPay", signatureToPay)                              
   
       const ARECID = allARECNftTokensID[arecSelected]
       const ARECIDString ='00000000'.concat(ARECID.toString())
       const ARECIDStr =ARECIDString.substring(ARECIDString.length-8)
 
-      setRECIssauncetate({ attemptingTxn: true, recRequestToConfirm, showConfirm, IssueErrorMessage: undefined, txHash: undefined })
+      setARECTxnState({ attemptingTxn: true, txnToConfirm, showConfirm, IssueErrorMessage: undefined, txHash: undefined })
       await arkreenRECIssuanceContract.estimateGas['certifyRECRequest']( ARECID, ARECIDStr)
         .then(async(estimatedGasLimit) => {
           await arkreenRECIssuanceContract.certifyRECRequest(ARECID, ARECIDStr, 
@@ -304,48 +237,25 @@ export default function RECManager() {
             addTransaction(response, {
               summary: `Request AREC issued by ${shortenAddress(recRequest.issuer,6)}`
             })
-            setRECIssauncetate({ attemptingTxn: false, recRequestToConfirm, showConfirm, IssueErrorMessage: undefined, txHash: response.hash })
+            setARECTxnState({ attemptingTxn: false, txnToConfirm, showConfirm, IssueErrorMessage: undefined, txHash: response.hash })
           })
           .catch((error: any) => {
               // if the user rejected the tx, pass this along
               if (error?.code === 4001) {
-                  throw new Error(`NFT Bidding failed: You denied transaction signature.`)
+                  throw new Error(`Confirm AREC Issuance failed: You denied transaction signature.`)
               } else {
                 // otherwise, the error was unexpected and we need to convey that
-                throw new Error(`NFT Bidding failed: ${error.message}`)
+                throw new Error(`Confirm AREC Issuance failed: ${error.message}`)
               }
           })
         })
         .catch((error: any) => {
-          console.log("Error of mintRECRequest estimateGas tx:", error)
-          setRECIssauncetate({attemptingTxn: false, recRequestToConfirm, showConfirm, IssueErrorMessage: error.message, txHash: undefined })
+          console.log("Error of Confirm AREC Issuance tx:", error)
+          setARECTxnState({attemptingTxn: false, txnToConfirm, showConfirm, IssueErrorMessage: error.message, txHash: undefined })
         })
       }
   
-  // show approve flow when: no error on inputs, not approved or pending, or approved in current session
-  // never show if price impact is above threshold in non expert mode
   const showApproveFlow = !(swapInputError || !arkreenTokenContract || !library || !approvalAmount || !dateSelected)
-
-
-//  <PageHeader header={'Swap'}> <SettingsIcon /> </PageHeader>
-// <CardNoise />
-
-/*
-<ConfirmSwapModal
-isOpen={showConfirm}
-trade={trade}
-originalTrade={tradeToConfirm}
-onAcceptChanges={handleAcceptChanges}
-attemptingTxn={attemptingTxn}
-txHash={txHash}
-recipient={recipient}
-allowedSlippage={allowedSlippage}
-onConfirm={handleRECRequest}
-swapErrorMessage={swapErrorMessage}
-onDismiss={handleConfirmDismiss}
-/>
-*/
-
 
   const recPowerList = allARECInfo.map((recData: RECData, index) => {
     const recPowerAmount = arkreenToken ? tryParseAmount(recData.amountREC.toString(), arkreenToken) : undefined
@@ -366,8 +276,8 @@ onDismiss={handleConfirmDismiss}
     <>
       <AppBody>
       <StyledPageCard bgColor={'red'}>
-        <PageHeader header={'AREC Retirement'}>
-          { chainId && ( <QuestionHelper text={'AREC Issuance'} info={<IssanceHelpInfo/>} /> ) } 
+        <PageHeader header={'AREC Manager'}>
+          { chainId && ( <QuestionHelper text={'AREC Manager'} info={<ManagerHelpInfo/>} /> ) } 
         </PageHeader>
         <Wrapper id="issuance-page">
           <AutoColumn gap={'md'}>
@@ -387,8 +297,7 @@ onDismiss={handleConfirmDismiss}
                   </RowBetween>                  
 
                   <div style={{margin: '0.8rem 0.6rem 0rem'}}>
-                    <select onChange = {onARECSelect} style={{ fontSize:16, fontWeight:500, width:'100%',
-                                      padding: '0.2rem 0.6rem 0.4rem 0.6rem', fontFamily: 'Lucida Console'}} >
+                    <ARECSelect itemselected={!!arecSelected} onChange = {onARECSelect}>
                       {allARECInfo.map((recData: RECData, index) => {
                         const optionText_ID = '0000'.concat(allARECNftTokensID[index].toString())
                         return  <option value={index} > 
@@ -397,9 +306,7 @@ onDismiss={handleConfirmDismiss}
                                   {recPowerList[index]} {`  `} {recStatusList[index]} 
                                 </option>
                       })}
-
-
-                    </select>
+                    </ARECSelect>
                   </div>
                   <div style={{padding: '0.2rem 0.6rem 0.5rem 0.6rem', marginTop: '1rem'}}>
                     { allARECInfo[0] && (
@@ -417,20 +324,15 @@ onDismiss={handleConfirmDismiss}
                 <ProgressSteps steps={[signatureData !== null]} />
               </Column>
             )}
-
-
             <RowBetween marginTop="10px">
-                  <ButtonPrimary width="100%" onClick={() => {handleRECCertify()}}>
+                  <ButtonPrimary fontSize={20} width="100%" onClick={() => {handleRECCertify()}}>
                     Confirm AREC NFT 
                   </ButtonPrimary>
             </RowBetween>
-
-
           </BottomGrouping>
         </Wrapper>
         </StyledPageCard>
       </AppBody>
-
     </>
   )
 }

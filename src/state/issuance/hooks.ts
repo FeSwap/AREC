@@ -151,8 +151,8 @@ export function useGetUserARECList(): {
 
   // get all AREC nft Token Infos
   let allARECNftTokensIDList = []
-  for (let i = 0; i < (nftARECCount ?? 0); i++) {
-    if(allARECNftTokensIDs[i]?.valid && !allARECNftTokensIDs[i]?.loading)
+  for (let i = 0; i < (allARECNftTokensIDs.length ?? 0); i++) {
+    if(allARECNftTokensIDs[i]?.valid && !allARECNftTokensIDs[i]?.loading && !allARECNftTokensIDs[i]?.error)
       allARECNftTokensIDList.push([allARECNftTokensIDs[i].result?.[0]?? BigNumber.from(0)])
   }
 
@@ -160,8 +160,8 @@ export function useGetUserARECList(): {
 
   let nftARECInfoList = []
   let allARECNftTokensID: BigNumber[] = []
-  for (let i = 0; i < (nftARECCount ?? 0); i++) {
-    if(allARECNftInfos[i]?.valid && !allARECNftInfos[i]?.loading) {
+  for (let i = 0; i < (allARECNftInfos.length ?? 0); i++) {
+    if(allARECNftInfos[i]?.valid && !allARECNftInfos[i]?.loading && !allARECNftInfos[i]?.error) {
       nftARECInfoList.push(allARECNftInfos[i].result?.[0])
       allARECNftTokensID.push(allARECNftTokensIDs[i].result?.[0]?? BigNumber.from(0))
     }
@@ -170,7 +170,7 @@ export function useGetUserARECList(): {
   let totalRECAmountIssued: BigNumber = BigNumber.from(0)
   let totalRECAmountPending: BigNumber = BigNumber.from(0)
   let cancelledAREC:number = 0
-
+ 
   for (let i = 0; i < (nftARECInfoList ? nftARECInfoList.length: 0); i++) {
     if((nftARECInfoList[i] as RECData)?.status === REC_STARUS.Cancelled) {
       cancelledAREC += 1

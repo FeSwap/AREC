@@ -10,7 +10,7 @@ import { AlertTriangle, ArrowUpCircle } from 'react-feather'
 import { ButtonPrimary } from '../Button'
 import { AutoColumn, ColumnCenter } from '../Column'
 import Circle from '../../assets/images/blue-loader.svg'
-// import { Separator } from '../SearchModal/styleds'
+import { Separator } from '../SearchModal/styleds'
 
 import { getExplorerLink} from '../../utils/explorer'
 import { useActiveWeb3React } from '../../hooks'
@@ -133,6 +133,36 @@ export function ConfirmationModalContent({
           <CloseIcon onClick={onDismiss} />
         </RowBetween>
         {topContent()}
+      </Section>
+      <BottomSection gap="12px">{bottomContent()}</BottomSection>
+    </Wrapper>
+  )
+}
+
+export function ConfirmationModalContentTitle({
+  title,
+  bottomContent,
+  onDismiss,
+  topContent
+}: {
+  title: string
+  onDismiss: () => void
+  topContent: () => React.ReactNode
+  bottomContent: () => React.ReactNode
+}) {
+  return (
+    <Wrapper>
+      <Section style={{padding:'0px'}}>
+        <RowBetween style={{padding:'24px 24px 0px'}}>
+          <Text fontWeight={500} fontSize={20}>
+            {title}
+          </Text>
+          <CloseIcon onClick={onDismiss} />
+        </RowBetween>
+        <Separator style={{marginTop:'4px'}} />
+        <div style={{padding:'0px 24px 24px'}} >
+          {topContent()}
+        </div>
       </Section>
       <BottomSection gap="12px">{bottomContent()}</BottomSection>
     </Wrapper>

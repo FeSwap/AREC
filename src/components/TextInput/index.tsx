@@ -47,7 +47,7 @@ export const TextAreaInput = styled.textarea<{ error?: boolean; fontSize?: strin
   text-overflow: ellipsis;
   font-weight: 500;
   width: 100%;
-  line-height: 1.2;
+  line-height: 1.25rem;
   padding: ${({ borderRadius }) => borderRadius ? '0.4rem 1rem 0.4rem 1rem': '0px'};;
   -webkit-appearance: textfield;
 
@@ -133,7 +133,7 @@ export const ResizingTextArea = memo(
 
     return (
       <TextAreaInput
-        style={{ height: 'auto', minHeight: small ? '6rem': '500px' }}
+        style={{ height: 'auto', minHeight: small ? '6rem': '500px', maxHeight: small ? '10rem': 'none' }}
         className={className}
         autoComplete="off"
         autoCorrect="off"

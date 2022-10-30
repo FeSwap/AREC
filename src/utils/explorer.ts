@@ -57,6 +57,19 @@ const builders = {
     }
   },
 
+  maticTest: (chainName: string, data: string, type: 'transaction' | 'token' | 'address' | 'block') => {
+    // const prefix = `https://explorer-${chainName}.maticvigil.com`
+    const prefix = 'https://mumbai.polygonscan.com/'
+    switch (type) {
+      case 'transaction':
+        return `${prefix}/tx/${data}`
+      case 'token':
+        return `${prefix}/tokens/${data}`
+      default:
+        return `${prefix}/${type}/${data}`
+    }
+  },
+
   // token is not yet supported for arbitrum
   arbitrum: (chainName: string, data: string, type: 'transaction' | 'token' | 'address' | 'block') => {
     const prefix = `https://arbiscan.io`
@@ -218,12 +231,12 @@ const chains: ChainObject = {
     builder: builders.etherscan,
   },
   [ChainId.MATIC]: {
-    chainName: 'mainnet',
+    chainName: 'polygon',
     builder: builders.matic,
   },
   [ChainId.MATIC_TESTNET]: {
-    chainName: 'mumbai',
-    builder: builders.matic,
+    chainName: '',
+    builder: builders.maticTest,
   },
   [ChainId.FANTOM]: {
     chainName: '',

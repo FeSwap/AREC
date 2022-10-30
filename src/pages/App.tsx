@@ -29,7 +29,7 @@ import { RedirectOldRemoveLiquidityPathStructure } from './RemoveLiquidity/redir
 import Swap from './Swap'
 import Nft from './Nft'
 import Issuance from './Issuance'
-import Retirement from './Retirement'
+import Redeem from './Redeem'
 import Liquidize from './Liquidize'
 import RECManager from './RECManager'
 import MintCertificate from './Certificate'
@@ -127,7 +127,7 @@ export default function App() {
               <Route exact strict path="/send" component={RedirectPathToSwapOnly} />
               <Route exact strict path="/Issuance" component={Issuance} />
               <Route exact strict path="/Liquidize" component={Liquidize} />
-              <Route exact strict path="/Retirement" component={Retirement} />   
+              <Route exact strict path="/Redeem" component={Redeem} />   
               <Route exact strict path="/RECManager" component={RECManager} />  
               <Route exact strict path="/Offset" component={Offset} />  
               <Route exact strict path="/mintCert" component={MintCertificate} />  
