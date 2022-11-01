@@ -1,11 +1,13 @@
 import { useActiveWeb3React } from '../../hooks'
 import { calculateGasMargin } from '../../utils'
 import { TransactionResponse } from '@ethersproject/providers'
+import { ChainId, Token } from '@feswap/sdk'
 import { useTransactionAdder } from '../transactions/hooks'
 import { BigNumber } from 'ethers'
 import { useSingleCallResult, useSingleContractMultipleData } from '../multicall/hooks'
 import { ZERO_ADDRESS } from '../../constants'
 import { useMemo } from 'react'
+import { arkreenTokenAddress } from '../../hooks/useContract'
 
 import { useRECIssuanceContract, useArkreenRetirementContract, useArkreenRECTokenContract } from '../../hooks/useContract'
 import { useGetARECConfirmCounter, useSetARECConfirmCounter } from '../user/hooks'
@@ -62,6 +64,7 @@ export interface  OffsetAction {
   bClaimed:       boolean;
 }
 
+export const arkreenToken = new Token(ChainId.MATIC_TESTNET, arkreenTokenAddress, 18, 'AKRE', 'Arkreen DAO Token')
 
 
 export function useRECIssuanceCallback(
@@ -129,7 +132,6 @@ export function useAllActionIds(): BigNumber[] | undefined {
   }
   return undefined
 }
-
 
 export function useGetUserARECList(): {
   numberOfARECNft:        number | undefined
@@ -253,37 +255,17 @@ export function useGetActionList(): {
 
   let offsetActionsIDLIst: BigNumber[][] = []
   for (let i = 0; i < (allOffsetActionsID?.length ?? 0); i++) {
-    offsetActionsIDLIst.push([allOffsetActionsID ? allOffsetActionsID[i]: BigNumber.from(0)])
+    offsetActionsIDLIst.push([allOffsetActionsID?.[i] ?? BigNumber.from(0)])
   }
 
   const allUserOffsetActions = useSingleContractMultipleData(arkreemRetirementContract, 'getOffsetActions', offsetActionsIDLIst)
 
   let allOffsetActions: OffsetAction[] = []
-  for (let i = 0; i < (allOffsetActionsID?.length ?? 0); i++) {
-    if(allUserOffsetActions[i]?.valid && !allUserOffsetActions[i]?.loading) {
+  for (let i = 0; i < (allUserOffsetActions?.length ?? 0); i++) {
+    if(allUserOffsetActions[i]?.valid && !allUserOffsetActions[i]?.loading  && !allUserOffsetActions[i]?.error) {
       allOffsetActions.push(allUserOffsetActions[i].result?.[0])
     }
   }
-
-/*  
-  let totalUnclaimedAmount: BigNumber = BigNumber.from(0)
-  let totalClaimedAmount: BigNumber = BigNumber.from(0)
-  let allUnclaimedActionsIDs: BigNumber[] = [] 
-  let allClaimedActionsIDs: BigNumber[] = [] 
-  let allUnclaimedActions: OffsetAction[] = []
-
-  for (let i = 0; i <allOffsetActions.length; i++) {
-    if(allOffsetActions[i] === undefined) break
-    if((allOffsetActions[i] as OffsetAction).bClaimed === false) {
-      allUnclaimedActionsIDs.push(offsetActionsIDLIst[i][0])
-      totalUnclaimedAmount = totalUnclaimedAmount.add((allOffsetActions[i] as OffsetAction).amount)
-      allUnclaimedActions.push(allOffsetActions[i])
-    } else {
-      allClaimedActionsIDs.push(offsetActionsIDLIst[i][0])
-      totalClaimedAmount = totalClaimedAmount.add((allOffsetActions[i] as OffsetAction).amount)
-    }
-  }
-*/
 
   const { totalUnclaimedAmount, totalClaimedAmount, allUnclaimedActionsIDs, 
           allClaimedActionsIDs, allUnclaimedActions } = useMemo(()=> {
@@ -295,7 +277,7 @@ export function useGetActionList(): {
   
     if( !(!allOffsetActionsID || !allOffsetActions || !offsetActionsIDLIst)) {
       for (let i = 0; i <allOffsetActions.length; i++) {
-        if(allOffsetActions[i] === undefined) break
+//      if(allOffsetActions[i] === undefined) break
         if((allOffsetActions[i] as OffsetAction).bClaimed === false) {
           allUnclaimedActionsIDs.push(offsetActionsIDLIst[i][0])
           totalUnclaimedAmount = totalUnclaimedAmount.add((allOffsetActions[i] as OffsetAction).amount)

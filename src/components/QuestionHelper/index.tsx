@@ -54,7 +54,7 @@ const QuestionMark = styled.span`
 `
 
 export default function QuestionHelper({ text, info, warning = false, small, bkgOff }: 
-                    { text?: string, info?: JSX.Element, warning?: boolean, small?: boolean, bkgOff?: boolean }) {
+                    { text?: string, info?: JSX.Element, warning?: boolean, small?: string, bkgOff?: boolean }) {
   const [show, setShow] = useState<boolean>(false)
   const theme = useContext(ThemeContext)
 
@@ -65,7 +65,8 @@ export default function QuestionHelper({ text, info, warning = false, small, bkg
     <span style={{ marginLeft: 4 }}>
       <Tooltip text={text} info={info} show={show}>
         <QuestionWrapper onClick={open} onMouseEnter={open} onMouseLeave={close} bkgOff={bkgOff}>
-          { <Question color={warning ? theme.primary1: undefined } size={small ? 12 : 20} />
+          { <Question color={warning ? theme.primary1: undefined } 
+            size={(small==='s') ? 12 : (small==='m')? 16 : 20} />
           }
         </QuestionWrapper>
       </Tooltip>

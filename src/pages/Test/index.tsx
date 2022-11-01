@@ -1,412 +1,159 @@
-//import React from 'react'
-import React, { useCallback, useContext } from 'react'
-
-//import { Box } from 'rebass'
-//import { Text } from 'rebass'
-
-import styled, { ThemeContext } from 'styled-components'
-//import { AutoRow } from '../../components/Row'
-//import { AutoRow, RowBetween } from '../../components/Row'
-
-import { RowBetween, Divider, Gap } from '../../components/Row'
-import { AutoColumn } from '../../components/Column'
-//import {DataCard} from '../../components/earn/styled'
-import PageHeader from '../../components/PageHeader'
-import { CardNoise } from '../../components/earn/styled'
-
-//import PairList from '../../components/PairList'
-//import TopTokenList from '../../components/TokenList'
-//import TxnList from '../../components/TxnList'
-//import GlobalChart from '../../components/GlobalChart'
-//import Search from '../../components/Search'
-//import GlobalStats from '../../components/GlobalStats'
-
-//import { useGlobalData, useGlobalTransactions } from '../../contexts/GlobalData'
-//import { useAllPairData } from '../../contexts/PairData'
-//import { useMedia } from 'react-use'
-//import Panel from '../../components/Panel'
-//import { useAllTokenData } from '../../contexts/TokenData'
-//import { formattedNum, formattedPercent } from '../../utils'
-import { TYPE } from '../../theme'
-//import AppBody from '../AppBody'
-// import { TYPE, ThemedBackground } from '../../Theme'
-
-import { transparentize } from 'polished'
-//import { CustomLink } from '../../components/Link'
-
-//import { PageWrapper, ContentWrapper } from '../../components'
-
-//import CheckBox from '../../components/Checkbox'
-//import QuestionHelper from '../../components/QuestionHelper'
-//import DateTimePicker from 'react-datetime-picker';
-// import Datetime from 'react-datetime';
-import { DateTime } from 'luxon'
-
-
+import React from 'react'
 import { Text } from 'rebass'
 
-/*
-export const PageWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  padding-top: 0px;
-  padding-bottom: 80px;
+import { ButtonError } from '../../components/Button'
 
-  @media screen and (max-width: 600px) {
-    & > * {
-      padding: 0 12px;
+
+import { RowBetween } from '../../components/Row'
+import { BottomGrouping, Wrapper } from '../../components/swap/styleds'
+import PageHeader from '../../components/PageHeader'
+import {StyledPageCard} from '../../components/earn/styled'
+
+
+
+import { useActiveWeb3React } from '../../hooks'
+//import { useWalletModalToggle } from '../../state/application/hooks'
+
+
+import AppBody from '../AppBody'
+import QuestionHelper from '../../components/QuestionHelper'
+
+export default function Liquidize() {
+  const { chainId } = useActiveWeb3React()
+
+
+  async function Test() {
+    console.log("AAAAAAAAAAAAAAAAAA")
+    const url = "https://api.arkreen.com/account/account/"
+    const account = "0x364a71eE7a1C9EB295a4F4850971a1861E9d3c7D"
+
+    const response = await fetch(url + account)
+
+    const json = await response.json()
+    console.log('Json data', json)
+  }
+
+
+  async function getData() {
+    const url = new URL("https://api.arkreen.com/device/device/getMinersByOwnerAddress")
+    const parameter = {
+      "address":  "0x364a71eE7a1C9EB295a4F4850971a1861E9d3c7D",
+      "offset":   "1",
+      "limit":    "10",
     }
-  }
-`
-*/
-
-/*
-const PageWrapper = styled(AutoColumn)`
-  max-width: 1080px;
-  width: 100%;
-`
-*/
-
-/*
-const Input = styled.input`
-  background: ${({ theme }) => theme.bg1};
-  font-size: 16px;
-  width: auto;
-  outline: none;
-  &::-webkit-outer-spin-button,
-  &::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-  }
-  color: ${({ theme, color }) => (color === 'red' ? theme.red1 : theme.text1)};
-  text-align: right;
-`
-
-*/
-
-const DataRow = styled(RowBetween)`
-  justify-content: start;
-  overflow: hidden;
-  border-radius: 12px;
-  display: flex;
-  gap: 12px;
-
-  ${({ theme }) => theme.mediaWidth.upToSmall`
-    flex-direction: column;
-    gap: 12px;
-  `};
-`
-
-export const ContentWrapper = styled.div`
-  display: grid;
-  justify-content: start;
-  align-items: start;
-  grid-template-columns: 1fr;
-  grid-gap: 24px;
-  max-width: 1440px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 0 2rem;
-  box-sizing: border-box;
-  @media screen and (max-width: 1180px) {
-    grid-template-columns: 1fr;
-    padding: 0 1rem;
-  }
-`
-
-//background: radial-gradient(76.02% 75.41% at 40% 0%, #FFB6C1 30%, #E6E6FA 100%);
-
-const DataCard = styled(AutoColumn)<{ disabled?: boolean }>`
-  border-radius: 10px;
-  width: 100%;
-  position: relative;
-  overflow: hidden;
-`
-
-//background: radial-gradient(76.02% 75.41% at 40% 0%, #FFB6C1 30%, #E6E6FA 100%);
-
-const PoolData = styled(DataCard)`
-  border: 1px solid rgba(0, 0, 0, 0.3);
-  border-radius: 12px;
-  padding: 12px;
-  background: rgba(0,100,30,0.3);
-  z-index: 1;
-`
-
-//max-width: 300px;
-
-interface InfoDataProps {
-  tag: string
-  info: string
-}
-
-function InfoData({tag, info}: InfoDataProps) {
-  return (
-    <PoolData>
-      <AutoColumn gap="sm">
-        <TYPE.mediumHeader style={{ margin: 0, whiteSpace: 'nowrap' }}>{tag} </TYPE.mediumHeader>
-        <TYPE.body fontSize={22} fontWeight={300} style={{ textAlign: 'center' }}>
-          {info} 
-        </TYPE.body>
-      </AutoColumn>
-    </PoolData>  
-  )
-}
-
-const ScrollSelect = styled.select`
-  appearance:none;
-  -moz-appearance:none;
-  -webkit-appearance:none;
-
-  ::-webkit-scrollbar-track
-  {
-    -webkit-box-shadow: inset 0 0 8px rgb(1, 64, 118);
-    border-radius: 6px;
-    background-color: rgba(245, 245, 245, 0.2);
+    const search = new URLSearchParams(parameter).toString();
+    console.log("search", search, url+'?'+search)
+ 
+    const response = await fetch(url+'?'+search)
+    
+    const json = await response.json()
+    console.log('Json data', json)
   }
 
-  ::-webkit-scrollbar-thumb {
-    border-radius: 6px;
-    background-clip: content-box;
-    box-shadow: 0 0 0 5px #464f70 inset;
-    -webkit-box-shadow: inset 0 0 8px
+    // Example POST method implementation:
+  //  async function postData(url = '', data = {}) {
+  async function getMiners() {
+      const url = "https://api.arkreen.com/device/device/getMinersByOwnerAddress"
+      const parameter = {
+        "address":  "0x364a71eE7a1C9EB295a4F4850971a1861E9d3c7D",
+        "offset":   1,
+        "limit":    25,
+      }
+  
+      // Default options are marked with *
+      const response = await fetch(url, {
+        method: 'POST',                 // *GET, POST, PUT, DELETE, etc.
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(parameter)      // body data type must match "Content-Type" header
+      });
+      console.log('response data', response)
+      const json = await response.json()
+      console.log('Json data', json)
+    }
+
+
+  // Example POST method implementation:
+  //  async function postData(url = '', data = {}) {
+  async function postData() {
+    const url = "https://api.arkreen.com/account/accountreward/list"
+    const parameter = {
+      "address":  "0x364a71eE7a1C9EB295a4F4850971a1861E9d3c7D",
+      "offset":   1,
+      "limit":    25,
+    }
+
+    // Default options are marked with *
+    const response = await fetch(url, {
+      method: 'POST',                 // *GET, POST, PUT, DELETE, etc.
+      mode: 'cors',                   // no-cors, *cors, same-origin
+      cache: 'no-cache',              // *default, no-cache, reload, force-cache, only-if-cached
+      credentials: 'same-origin',     // include, *same-origin, omit
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      redirect: 'follow',             // manual, *follow, error
+      referrerPolicy: 'no-referrer',  // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+      body: JSON.stringify(parameter)      // body data type must match "Content-Type" header
+    });
+    console.log('response data', response)
+    const json = await response.json()
+    console.log('Json data', json)
   }
-`
 
-/*
-const ListOptions = styled(AutoRow)`
-  height: 40px;
-  width: 100%;
-  font-size: 1.25rem;
-  font-weight: 600;
-
-  @media screen and (max-width: 640px) {
-    font-size: 1rem;
+  async function getJsonData() {
+    postData()
   }
-`
 
-const GridRow = styled.div`
-  display: grid;
-  width: 100%;
-  grid-template-columns: 1fr 1fr;
-  column-gap: 6px;
-  align-items: start;
-  justify-content: space-between;
-`
-*/
-
-export const BodyWrapper = styled.div`
-  position: relative;
-  max-width: 1080px;
-  width: 100%;
-  background:  radial-gradient(91.85% 100% at 1.84% 0%, ${transparentize(0.3, 'pink')} 0%, ${'#E6E6FA'} 100%);
-  box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.01), 0px 4px 8px rgba(0, 0, 0, 0.04), 0px 16px 24px rgba(0, 0, 0, 0.04)
-  0px 24px 32px rgba(0, 0, 0, 0.01);
-  border-radius: 16px;
-  padding: 0rem;
-`
-
-//background: radial-gradient(76.02% 75.41% at 40% 0%, #FFB6C1 30%, #E6E6FA 100%);
-/**
- * The styled container element that wraps the content of most pages and the tabs.
- */
-export function AppBody({ children, ...rest }: { children: React.ReactNode }) {
-  return <BodyWrapper {...rest}>{children}</BodyWrapper>
-}
-
-export default function Test() {
-
-//  const [value, onChange] = useState(new Date());
-
-  // get data for lists and totals
-//  const allPairs = useAllPairData()
-//  const allTokens = useAllTokenData()
-//  const transactions = useGlobalTransactions()
-//  const { totalLiquidityUSD, oneDayVolumeUSD, volumeChangeUSD, liquidityChangeUSD } = useGlobalData()
-
-  // breakpoints
-//  const below800 = useMedia('(max-width: 800px)')
-
-
-  // for tracked data on pairs
-//  const [useTracked, setUseTracked] = useState(true)
-  const theme = useContext(ThemeContext)
-
-  const now = DateTime.now()
-
-  console.log("Now", now, now.toLocaleString(), now.toString())
-
-const onSelect = useCallback( (city) => {
-  console.log(city.target.value)
-},[])
-
-
-const onDate = useCallback( (date1) => {
-  console.log(date1.target.value, typeof date1.target.value)
-},[])
 
   return (
     <>
       <AppBody>
+      <StyledPageCard bgColor={'red'}>
+        <PageHeader header={'Test'}>
+          { chainId && ( <QuestionHelper text={'Test'} info={<>Test</>} /> )} 
+        </PageHeader>
+        <Wrapper id="issuance-page">
 
-        <div style={{border:'1px solid red', height:'100px'}}>
-          <Text fontWeight={700} fontSize={14} color={theme.text3} style={{ textAlign:'center', lineHeight:"100px"}}> 
-            50.00 KWH 
-          </Text>
-        </div>
-
-          <ScrollSelect multiple name = "选择城市" onChange={onSelect} style={{ fontSize:16, fontWeight:500, width:'50%', 
-                                    borderColor: theme.text1,
-                                    borderWidth: "1px",
-                                    borderRadius: '4px 4px 4px 4px',
-                                    appearance: 'none',
-                                    padding: '0.4rem 0.6rem 0.4rem 0.6rem', fontFamily: 'Lucida Console'}}>
-            <optgroup label="山东省">
-              <option value="潍坊">潍坊</option>
-              <option value="青岛" selected={true}>青岛</option>
-            </optgroup>
-            <optgroup label="山西省">
-              <option value="太原">太原</option>
-              <option value="榆次">榆次</option>
-            </optgroup>
-          </ScrollSelect>
+          <BottomGrouping>
 
 
-        <input type="date" name="date1" translate='no' onChange={onDate}/>
+                <RowBetween style={{marginTop:'1rem'}}>
+                  <ButtonError  onClick={Test}>
+                    <Text fontSize={20} fontWeight={500}>
+                      Test
+                    </Text>
+                  </ButtonError>
+                </RowBetween>
 
+                <RowBetween style={{marginTop:'1rem'}}>
+                  <ButtonError  onClick={getJsonData}>
+                    <Text fontSize={20} fontWeight={500}>
+                      postData
+                    </Text>
+                  </ButtonError>
+                </RowBetween>                
 
+                <RowBetween style={{marginTop:'1rem'}}>
+                  <ButtonError  onClick={()=>getData()}>
+                    <Text fontSize={20} fontWeight={500}>
+                      getData
+                    </Text>
+                  </ButtonError>
+                </RowBetween>  
+
+                <RowBetween style={{marginTop:'1rem'}}>
+                  <ButtonError  onClick={()=>getMiners()}>
+                    <Text fontSize={20} fontWeight={500}>
+                      getMiners
+                    </Text>
+                  </ButtonError>
+                </RowBetween>                  
+          </BottomGrouping>
+        </Wrapper>
+        </StyledPageCard>
       </AppBody>
-
-      <AppBody>
-        <PageHeader header="Test" />    
-
-        <DataRow style={{ gap: '10px', padding: '1rem' }}>
-          <InfoData tag={'Total AREC NFTs:'} info={'10 NFTs'}/>
-          <InfoData tag={'Total AREC Power:'} info={'10000 MWH'}/>
-          <InfoData tag={'Total AREC Holders:'} info={'1000'}/>
-        </DataRow> 
-        <Divider />
-        <DataRow style={{ gap: '10px', padding: '1rem' }}>  
-          <InfoData tag={'AKRE Max Supply:'} info={'10,000,000,000 AKRE'}/>  
-          <InfoData tag={'AKRE Circulating Supply:'} info={'100,000 AKRE'}/>              
-          <InfoData tag={'Total AKRE Hoders:'} info={'90,000'}/>
-        </DataRow> 
-
-      </AppBody>
-      <Gap />
-      <AppBody>
-        <PageHeader header="My Profile" />      
-        <DataRow style={{ gap: '10px', padding: '1rem' }}>
-          <InfoData tag={'My AKRE'} info={'20,000 ARKE'}/>
-          <InfoData tag={'My AREC NFTs:'} info={'10 NFTs'}/>
-          <InfoData tag={'My AREC Power:'} info={'10000 MWH'}/>
-        </DataRow> 
-        <Divider />
-        <DataRow style={{ gap: '10px', padding: '1rem' }}>  
-          <InfoData tag={'AREC Redeemed:'} info={'1,000 KWH'}/>  
-          <InfoData tag={'AREC Offset:'} info={'20,000 KWH'}/>              
-          <InfoData tag={'Total AREC retired:'} info={'50,000 KWH'}/>
-        </DataRow> 
-        <CardNoise />
-      </AppBody>
-
     </>
   )
 }
-
-//<Search />
-//<GlobalStats />
-
-/*
-{below800 && ( // mobile card
-            <Box mb={20}>
-              <Panel>
-                <Box>
-                  <AutoColumn gap="36px">
-                    <AutoColumn gap="20px">
-                      <RowBetween>
-                        <TYPE.main>Volume (24hrs)</TYPE.main>
-                        <div />
-                      </RowBetween>
-                      <RowBetween align="flex-end">
-                        <TYPE.main fontSize={'1.5rem'} lineHeight={1} fontWeight={600}>
-                          {oneDayVolumeUSD ? formattedNum(oneDayVolumeUSD, true) : '-'}
-                        </TYPE.main>
-                        <TYPE.main fontSize={12}>{volumeChangeUSD ? formattedPercent(volumeChangeUSD) : '-'}</TYPE.main>
-                      </RowBetween>
-                    </AutoColumn>
-                    <AutoColumn gap="20px">
-                      <RowBetween>
-                        <TYPE.main>Total Liquidity</TYPE.main>
-                        <div />
-                      </RowBetween>
-                      <RowBetween align="flex-end">
-                        <TYPE.main fontSize={'1.5rem'} lineHeight={1} fontWeight={600}>
-                          {totalLiquidityUSD ? formattedNum(totalLiquidityUSD, true) : '-'}
-                        </TYPE.main>
-                        <TYPE.main fontSize={12}>
-                          {liquidityChangeUSD ? formattedPercent(liquidityChangeUSD) : '-'}
-                        </TYPE.main>
-                      </RowBetween>
-                    </AutoColumn>
-                  </AutoColumn>
-                </Box>
-              </Panel>
-            </Box>
-          )}
-          {!below800 && (
-            <GridRow>
-              <Panel style={{ height: '100%', minHeight: '300px' }}>
-                <GlobalChart display="liquidity" />
-              </Panel>
-              <Panel style={{ height: '100%' }}>
-                <GlobalChart display="volume" />
-              </Panel>
-            </GridRow>
-          )}
-          {below800 && (
-            <AutoColumn style={{ marginTop: '6px' }} gap="24px">
-              <Panel style={{ height: '100%', minHeight: '300px' }}>
-                <GlobalChart display="liquidity" />
-              </Panel>
-            </AutoColumn>
-          )}
-          <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
-            <RowBetween>
-              <TYPE.main fontSize={'1.125rem'} style={{ whiteSpace: 'nowrap' }}>
-                Top Tokens
-              </TYPE.main>
-              <CustomLink to={'/tokens'}>See All</CustomLink>
-            </RowBetween>
-          </ListOptions>
-          <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
-            <TopTokenList tokens={allTokens} />
-          </Panel>
-          <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
-            <RowBetween>
-              <TYPE.main fontSize={'1rem'} style={{ whiteSpace: 'nowrap' }}>
-                Top Pairs
-              </TYPE.main>
-              <AutoRow gap="4px" width="100%" justifyContent="flex-end">
-                <CheckBox
-                  checked={useTracked}
-                  setChecked={() => setUseTracked(!useTracked)}
-                  text={'Hide untracked pairs'}
-                />
-                <QuestionHelper text="USD amounts may be inaccurate in low liquidity pairs or pairs without ETH or stablecoins." />
-                <CustomLink to={'/pairs'}>See All</CustomLink>
-              </AutoRow>
-            </RowBetween>
-          </ListOptions>
-          <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
-            <PairList pairs={allPairs} useTracked={useTracked} />
-          </Panel>
-          <span>
-            <TYPE.main fontSize={'1.125rem'} style={{ marginTop: '2rem' }}>
-              Transactions
-            </TYPE.main>
-          </span>
-          <Panel style={{ margin: '1rem 0' }}>
-            <TxnList transactions={transactions} />
-          </Panel>
-        </div>
-*/

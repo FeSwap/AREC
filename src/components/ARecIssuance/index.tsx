@@ -1,4 +1,5 @@
 import React, { useContext, useState } from 'react'
+import { Fraction, JSBI } from '@feswap/sdk'
 import styled, { ThemeContext } from 'styled-components'
 import { darken } from 'polished'
 import { RowBetween, RowFixed } from '../Row'
@@ -16,10 +17,10 @@ import { ZERO_ADDRESS } from '../../constants'
 import { ButtonEmpty } from '../Button'
 import { DateTime } from 'luxon'
 import { RECData, REC_STARUS } from '../../state/issuance/hooks'
-import { useCurrency } from '../../hooks/Tokens'
-import { tryParseAmount } from '../../state/swap/hooks'
+//import { useCurrency } from '../../hooks/Tokens'
+//import { tryParseAmount } from '../../state/swap/hooks'
 import { shortenAddress, shortenCID } from '../../utils'
-import { arkreenTokenAddress } from '../../hooks/useContract'
+//import { arkreenTokenAddress } from '../../hooks/useContract'
 
 export const ARECDate = styled.input.attrs({
   type: "date"
@@ -169,7 +170,7 @@ export function GetCerticateInfo({
           <TYPE.body color={theme.text2} fontWeight={500} fontSize={16}>
             <strong>Retirement Certificate Info:</strong>
           </TYPE.body>
-          <QuestionHelper bkgOff={true} small={true} info={<>This is the additional information items
+          <QuestionHelper bkgOff={true} small={'m'} info={<>This is the additional information items
                 that will be included in the minted retirement certificate.</>} />
         </RowFixed>
         <div />
@@ -181,7 +182,7 @@ export function GetCerticateInfo({
             <TYPE.body color={theme.text2} fontWeight={500} fontSize={14}>
               Certifictate Owner Name (Optional):
             </TYPE.body>
-            <QuestionHelper bkgOff={true} small={true} info={<>This is the name of the owner of the retirement
+            <QuestionHelper bkgOff={true} small={'s'} info={<>This is the name of the owner of the retirement
                   certificate that will be minted.</>} />
           </RowFixed>
           < ButtonUpOrDown bShow ={showOwnerName} setbShow ={setShowOwnerName} />
@@ -195,7 +196,7 @@ export function GetCerticateInfo({
             <TYPE.body color={theme.text2} fontWeight={500} fontSize={14}>
               Beneficiary Account Address: (Optional):
             </TYPE.body>
-            <QuestionHelper bkgOff={true} small={true} info={<>This is the account address of the retirement
+            <QuestionHelper bkgOff={true} small={'s'} info={<>This is the account address of the retirement
               beneficiary.</>} />
           </RowFixed>
           < ButtonUpOrDown bShow ={showbeneficiary} setbShow ={setShowbeneficiary} />
@@ -211,7 +212,7 @@ export function GetCerticateInfo({
             <TYPE.body color={theme.text2} fontWeight={500} fontSize={14}>
             Beneficiary Name (Optional):
             </TYPE.body>
-            <QuestionHelper bkgOff={true} small={true} info={<>This is the name of the 
+            <QuestionHelper bkgOff={true} small={'s'} info={<>This is the name of the 
                   retirement beneficiary. </>} />
           </RowFixed>
           < ButtonUpOrDown bShow ={showNameBeneficiary} setbShow ={setShowNameBeneficiary} />
@@ -226,7 +227,7 @@ export function GetCerticateInfo({
             <TYPE.body color={theme.text2} fontWeight={500} fontSize={14}>
               Retirement Memo: (Optional):
             </TYPE.body>
-            <QuestionHelper bkgOff={true} small={true} info={<>This is the optional message that could be recorded in the
+            <QuestionHelper bkgOff={true} small={'s'} info={<>This is the optional message that could be recorded in the
                   retirement certificate. </>} />
           </RowFixed>
           < ButtonUpOrDown bShow ={showMemoCertificate} setbShow ={setShowMemoCertificate} />
@@ -292,12 +293,13 @@ const ARECContainer = styled.div`
 `
 export function DetailedARECInfo({recData}:{recData: RECData}) {
   const theme = useContext(ThemeContext)
-  const arkreenToken = useCurrency(arkreenTokenAddress)
+//  const arkreenToken = useCurrency(arkreenTokenAddress)
 
   const startDate = DateTime.fromSeconds(recData.startTime) ?? ''
   const endDate = DateTime.fromSeconds(recData.endTime) ?? ''
 
-  const powerAmount = arkreenToken ? tryParseAmount(recData.amountREC.toString(), arkreenToken) : undefined
+//  const powerAmount = arkreenToken ? tryParseAmount(recData.amountREC.toString(), arkreenToken) : undefined
+  const powerAmount = new Fraction(recData.amountREC.toString(), JSBI.BigInt(1000000))
   const powerAmountString = (powerAmount?.toFixed(3, { groupSeparator: ',' }) ?? '0').concat(' KWH')
 
   const recStatus = (recData?.status === REC_STARUS.Pending) ? 'Pending':
@@ -309,7 +311,7 @@ export function DetailedARECInfo({recData}:{recData: RECData}) {
             <RowBetween align="center" height='24px'> 
               <RowFixed>
                 <Text fontWeight={500} fontSize={14} color={theme.text2}> AREC Status: </Text>
-                <QuestionHelper bkgOff={true} small={true} info={<>This is the selected AREC Status.
+                <QuestionHelper bkgOff={true} small={'s'} info={<>This is the selected AREC Status.
                     Only certified AREC can be redeemed of liquidized.</>} />
               </RowFixed>
               <Text lineHeight={"24px"} fontWeight={700} fontSize={14} 
@@ -321,7 +323,7 @@ export function DetailedARECInfo({recData}:{recData: RECData}) {
             <RowBetween align="center" height='24px'> 
               <RowFixed>
                 <Text fontWeight={500} fontSize={14} color={theme.text2}> AREC Issuer: </Text>
-                <QuestionHelper bkgOff={true} small={true} info={<>This is the name of the entity issuing AREC NFT.</>} />
+                <QuestionHelper bkgOff={true} small={'s'} info={<>This is the name of the entity issuing AREC NFT.</>} />
               </RowFixed>
               <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text1}> 
                 {shortenAddress(recData.issuer,6)}
@@ -332,7 +334,7 @@ export function DetailedARECInfo({recData}:{recData: RECData}) {
               <RowBetween align="center" height='24px'> 
                 <RowFixed>
                   <Text fontWeight={500} fontSize={14} color={theme.text2}> AREC Serial No: </Text>
-                  <QuestionHelper bkgOff={true} small={true} info={<>This is the unique serial number
+                  <QuestionHelper bkgOff={true} small={'s'} info={<>This is the unique serial number
                                         of the AREC certified by the issuer.</>} />
                 </RowFixed>
                 <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text1}> 
@@ -344,7 +346,7 @@ export function DetailedARECInfo({recData}:{recData: RECData}) {
             <RowBetween align="center" height='24px'> 
               <RowFixed>
                 <Text fontWeight={500} fontSize={14} color={theme.text2}> Earliest AREC Date: </Text>
-                <QuestionHelper bkgOff={true} small={true} info={<>This is the earlies date when 
+                <QuestionHelper bkgOff={true} small={'s'} info={<>This is the earlies date when 
                                       the renewable energy of the selected AREC is generated.</>} />
               </RowFixed>
               <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text1}> 
@@ -355,7 +357,7 @@ export function DetailedARECInfo({recData}:{recData: RECData}) {
             <RowBetween align="center" height="24px">
               <RowFixed>
                 <Text fontWeight={500} fontSize={14} color={theme.text2}> Latest AREC Date: </Text>
-                <QuestionHelper bkgOff={true} small={true} info={<>This is the last date when
+                <QuestionHelper bkgOff={true} small={'s'} info={<>This is the last date when
                                     the renewable energy of the selected AREC is generated.</>} />
               </RowFixed>
               <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text1}> 
@@ -366,7 +368,7 @@ export function DetailedARECInfo({recData}:{recData: RECData}) {
             <RowBetween align="center" height="24px">
               <RowFixed>
                 <Text fontWeight={500} fontSize={14} color={theme.text2}> Total RE Amount: </Text>
-                <QuestionHelper bkgOff={true} small={true} info={<>This is the amount of the total renewable energy  
+                <QuestionHelper bkgOff={true} small={'s'} info={<>This is the amount of the total renewable energy  
                               recorded in the selected AREC NFT.</>} />
               </RowFixed>
               <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text1}> {powerAmountString} </Text>
@@ -375,7 +377,7 @@ export function DetailedARECInfo({recData}:{recData: RECData}) {
             <RowBetween align="center" height="24px">
               <RowFixed>
                 <Text fontWeight={500} fontSize={14} color={theme.text2}> AREC Region:  </Text>
-                <QuestionHelper bkgOff={true} small={true} info={<>This is the region of the selected AREC.</>} />
+                <QuestionHelper bkgOff={true} small={'s'} info={<>This is the region of the selected AREC.</>} />
               </RowFixed>
               <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text1}> {recData.region} </Text>
             </RowBetween>
@@ -383,7 +385,7 @@ export function DetailedARECInfo({recData}:{recData: RECData}) {
             <RowBetween align="center" height="24px">
               <RowFixed>
                 <Text fontWeight={500} fontSize={14} color={theme.text2}> AREC cID: </Text>
-                <QuestionHelper bkgOff={true} small={true} info={<>This is the cID of the renewable energy data 
+                <QuestionHelper bkgOff={true} small={'s'} info={<>This is the cID of the renewable energy data 
                               in ipfs, with which the selected AREC RE amount can be verified.</>} />
               </RowFixed>
               <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text1}> {shortenCID(recData.cID)} </Text>

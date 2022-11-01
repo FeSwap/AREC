@@ -160,7 +160,8 @@ export default function CurrencyInputPanel({
   const { account, chainId } = useActiveWeb3React()
   const selectedCurrencyBalance = useCurrencyBalance(account ?? undefined, currency ?? undefined)
   const theme = useContext(ThemeContext)
-
+  
+  const decLength = currency?.decimals
   const token0 = pairTokenOrder ? pair?.token1 : pair?.token0
   const token1 = pairTokenOrder ? pair?.token0 : pair?.token1
 
@@ -202,6 +203,7 @@ export default function CurrencyInputPanel({
                 className="token-amount-input"
                 value={value}
                 disabled={disableInput}
+                decLength={decLength}
                 onUserInput={val => {
                   onUserInput(val)
                 }}

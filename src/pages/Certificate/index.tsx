@@ -1,4 +1,5 @@
 import React, { useContext, useState, useCallback, useMemo } from 'react'
+import { Fraction, JSBI } from '@feswap/sdk'
 import { Text } from 'rebass'
 import styled, { ThemeContext } from 'styled-components'
 import { ButtonError, ButtonLight } from '../../components/Button'
@@ -10,9 +11,7 @@ import useENS from '../../hooks/useENS'
 import PageHeader from '../../components/PageHeader'
 import {StyledPageCard} from '../../components/earn/styled'
 import { useTransactionAdder } from '../../state/transactions/hooks'
-import { useArkreenRetirementContract, arkreenTokenAddress } from '../../hooks/useContract'
-import { useCurrency } from '../../hooks/Tokens'
-import { tryParseAmount } from '../../state/swap/hooks'
+import { useArkreenRetirementContract } from '../../hooks/useContract'
 import { BigNumber } from 'ethers'
 import { calculateGasMargin } from '../../utils'
 import { TransactionResponse } from '@ethersproject/providers'
@@ -65,20 +64,19 @@ const ARECContainer = styled.div`
 function DetailedRetirementInfo({retireID, retireData}:
               {retireID: number[],  retireData: OffsetAction[]}) {
   const theme = useContext(ThemeContext)
-  const arkreenToken = useCurrency(arkreenTokenAddress)
 
   const totalRetirementAmount = retireID.reduce<BigNumber>((totalRetirementAmount, id)=> { 
       return totalRetirementAmount.add(retireData[id].amount)
   }, BigNumber.from(0))
 
-  const powerAmount = arkreenToken ? tryParseAmount(totalRetirementAmount.toString(), arkreenToken) : undefined
+  const powerAmount = new Fraction(totalRetirementAmount.toString(), JSBI.BigInt(1000000))
   const powerAmountString = (powerAmount?.toFixed(3, { groupSeparator: ',' }) ?? '0').concat(' KWH')
 
   return ( <ARECContainer>
             <RowBetween align="center" height="24px">
               <RowFixed>
                 <Text fontWeight={500} fontSize={14} color={theme.text2}> Number of Selected Retirement Actions: </Text>
-                <QuestionHelper bkgOff={true} small={true} info={<>This is the number of retirement actions
+                <QuestionHelper bkgOff={true} small={'s'} info={<>This is the number of retirement actions
                         that will be included in the minted retirement certificate.</>} />
               </RowFixed>
               <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text1}> {retireID.length} </Text>
@@ -86,7 +84,7 @@ function DetailedRetirementInfo({retireID, retireData}:
             <RowBetween align="center" height="24px">
               <RowFixed>
                 <Text fontWeight={500} fontSize={14} color={theme.text2}> Selected Retirement RE Amount: </Text>
-                <QuestionHelper bkgOff={true} small={true} info={<>This is the total renewable energy amount 
+                <QuestionHelper bkgOff={true} small={'s'} info={<>This is the total renewable energy amount 
                               of the selected retirement actions to be included in the minted retirement certificate.</>} />
               </RowFixed>
               <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text1}> {powerAmountString} </Text>
@@ -104,13 +102,11 @@ export default function MintCertificate() {
   const toggleWalletModal = useWalletModalToggle()
 
   const { allOffsetActionsID,
-          allOffsetActions,
           allUnclaimedActionsIDs,
           totalUnclaimedAmount,
           allUnclaimedActions
       } = useGetActionList()
   
-  const arkreenToken = useCurrency(arkreenTokenAddress)
   const arkRetirementCertificateContract = useArkreenRetirementContract(true)
  
   // const [{ showConfirm, txnToConfirm, errorMessage, attemptingTxn, txHash }, setARECTxnState] = useState<{
@@ -160,9 +156,14 @@ export default function MintCertificate() {
   }, [setOffsetSelected])
 
   const retiredPowerUnclaimed = allUnclaimedActions.map((offsetAction: OffsetAction) => {
-    const retiredPowerUnclaimed = arkreenToken ? tryParseAmount(offsetAction.amount.toString(), arkreenToken) : undefined
-    return (retiredPowerUnclaimed?.toFixed(3, { groupSeparator: ',' }) ?? '0').concat('_KWH')
+    const retiredPowerUnclaimed = new Fraction(offsetAction.amount.toString(), JSBI.BigInt(1000000))
+    return (retiredPowerUnclaimed?.toFixed(3, { groupSeparator: ',' }) ?? '0').concat(' KWH')
   })
+
+  const totalUnclaimedAmountString = useMemo(()=>{
+    const totalUnclaimedAmountString = new Fraction(totalUnclaimedAmount.toString(), JSBI.BigInt(1000000))
+    return totalUnclaimedAmountString.toFixed(3, { groupSeparator: ',' }).concat(' KWH')
+  },[totalUnclaimedAmount])
 
   async function handleMintCertificate() {
  
@@ -225,7 +226,7 @@ export default function MintCertificate() {
                   { (allOffsetActionsID !== undefined) && (
                     <RowBetween align="center" height='20px'>
                       <Text fontWeight={500} fontSize={14} color={theme.text2}> Total Retirement Amount to Mint: </Text>
-                      <Text fontWeight={700} fontSize={14} color={theme.primary1}> {totalUnclaimedAmount.toString()} KWH</Text>
+                      <Text fontWeight={700} fontSize={14} color={theme.primary1}> {totalUnclaimedAmountString}</Text>
                     </RowBetween>
                   )}
               </AutoColumn>
@@ -236,6 +237,7 @@ export default function MintCertificate() {
                   <TYPE.body color={theme.text2} fontWeight={500} fontSize={16} width={"45%"}>
                     <strong>Retirement Action List:</strong>
                   </TYPE.body>
+                  <QuestionHelper bkgOff={true} small={'m'} info={<> Use <b>CTRL + Click</b> to select multiple retirement actions.</>} />                  
                 </RowBetween>                  
                 <div style={{margin: '0.8rem 0.6rem 0.6rem'}}>
                   <select multiple size={5} onChange = {onARECSelect} style={{ fontSize:16, fontWeight:500, width:'100%', 
@@ -244,10 +246,10 @@ export default function MintCertificate() {
                                     borderRadius: '4px 0px 0px 4px',
                                     appearance: 'none',
                                     padding: '0.2rem 0.6rem 0rem 0.6rem', fontFamily: 'Tahoma'}} >
-                    <option value="none" disabled> Select action(s) to mint retirement NFT </option>                                           
+                    <option disabled> Select action(s) to mint retirement NFT </option>                                           
                     {allUnclaimedActionsIDs.map((_, index) => {
                       const optionText_ID = '0000'.concat(allUnclaimedActionsIDs[index].toString())
-                      return  <option value={index} key={index.toString()} > 
+                      return  <option value={index} key={optionText_ID} > 
                                 {'ACT_'.concat(optionText_ID.substring(optionText_ID.length-4)).concat(':')}
                                 {'         '} {retiredPowerUnclaimed[index]} 
                               </option>
@@ -256,7 +258,7 @@ export default function MintCertificate() {
                 </div>
                 { ((offsetSelected !== undefined) && (offsetSelected.length !==0)) &&(
                     <div style={{padding: '0.3rem 0.6rem 0.6rem 0.6rem'}}>
-                      <DetailedRetirementInfo retireID = {offsetSelected} retireData = {allOffsetActions} />
+                      <DetailedRetirementInfo retireID = {offsetSelected} retireData = {allUnclaimedActions} />
                     </div>
                 )}
               </Container>

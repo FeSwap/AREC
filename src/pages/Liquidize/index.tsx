@@ -1,17 +1,17 @@
-import React, { useContext, useState, useCallback } from 'react'
+import React, { useContext, useState, useCallback, useMemo } from 'react'
+import { Fraction, JSBI } from '@feswap/sdk'
 import { Text } from 'rebass'
 import { ThemeContext } from 'styled-components'
 import { ButtonError, ButtonLight } from '../../components/Button'
-
 import { AutoColumn } from '../../components/Column'
 import { RowBetween, RowFixed } from '../../components/Row'
 import { BottomGrouping, Wrapper } from '../../components/swap/styleds'
 import PageHeader from '../../components/PageHeader'
 import {StyledPageCard} from '../../components/earn/styled'
 import { useTransactionAdder } from '../../state/transactions/hooks'
-import { useRECIssuanceContract, arkreenTokenAddress, ARECTokenAddress } from '../../hooks/useContract'
+import { useRECIssuanceContract, ARECTokenAddress } from '../../hooks/useContract'
 import { useCurrency } from '../../hooks/Tokens'
-import { tryParseAmount } from '../../state/swap/hooks'
+import { TokenAmount, Token } from '@feswap/sdk'
 import { CurrencyAmount } from '@feswap/sdk'
 import { calculateGasMargin } from '../../utils'
 import { TransactionResponse } from '@ethersproject/providers'
@@ -19,7 +19,7 @@ import { useGetUserARECList } from '../../state/issuance/hooks'
 import Loader from '../../components/Loader'
 import { useActiveWeb3React } from '../../hooks'
 import { useWalletModalToggle } from '../../state/application/hooks'
-import { ARECSelect, DetailedARECInfo } from '../../components/ARecIssuance'
+import { ARECSelect, DetailedARECInfo, ARECOption } from '../../components/ARecIssuance'
 import { Container } from '../../components/CurrencyInputPanel'
 import { TYPE } from '../../theme'
 import { RECData, REC_STARUS, RECRequest } from '../../state/issuance/hooks'
@@ -67,11 +67,11 @@ export default function Liquidize() {
           totalRECAmountPending
         } = useGetUserARECList()
 
-  const arkreenToken = useCurrency(arkreenTokenAddress)
   const arkreenRECToken = useCurrency(ARECTokenAddress)
- 
+  const totalRECAmountIssuedString = (new Fraction(totalRECAmountIssued.toString(), JSBI.BigInt(1000000))).toFixed(3)
+  const totalRECAmountPendingString = (new Fraction(totalRECAmountPending.toString(), JSBI.BigInt(1000000))).toFixed(3)
+
   const arkreenRECIssuanceContract = useRECIssuanceContract(true)
-  
 
   // const [{ showConfirm, txnToConfirm, IssueErrorMessage, attemptingTxn, txHash }, setARECTxnState] = useState<{
   const [{ showConfirm, txnToConfirm }, setARECTxnState] = useState<{
@@ -93,21 +93,20 @@ export default function Liquidize() {
 
   const onARECSelect = useCallback( (arecSelect) => {
     setARECSelected(arecSelect.target.value)
- },[setARECSelected])
+  },[setARECSelected])
 
-
- const mintAmount: CurrencyAmount | undefined = 
-          ((arecSelected !== undefined) && allARECInfo[arecSelected]?.status === REC_STARUS.Certified)
-          ? tryParseAmount(allARECInfo[arecSelected].amountREC.toString(), arkreenRECToken??undefined) : undefined
+  const mintAmount: CurrencyAmount | undefined = useMemo(()=>{
+    if( !arkreenRECToken || !arecSelected || (allARECInfo[arecSelected].status !== REC_STARUS.Certified)) return undefined
+    return new TokenAmount(arkreenRECToken as Token, JSBI.BigInt(allARECInfo[arecSelected].amountREC.toString()))
+  },[allARECInfo, arecSelected, arkreenRECToken])
 
   const recPowerList = allARECInfo.map((recData: RECData) => {
-    const recPowerAmount = arkreenToken ? tryParseAmount(recData.amountREC.toString(), arkreenToken) : undefined
-    return (recPowerAmount?.toFixed(3, { groupSeparator: ',' }) ?? '0').concat('_KWH')
+    return (new Fraction(recData.amountREC.toString(), JSBI.BigInt(1000000))).toFixed(3, { groupSeparator: ',' }).concat(' KWH')
   })
 
   const recStatusList = allARECInfo.map((recData: RECData) => {
     const recStatus = (recData?.status === REC_STARUS.Pending) ? 'Pending':
-                      (recData?.status === REC_STARUS.Certified) ? 'Issued' :
+                      (recData?.status === REC_STARUS.Certified) ? 'Certified' :
                       (recData?.status === REC_STARUS.Cancelled) ? 'Cancelled' :
                       (recData?.status === REC_STARUS.Rejected) ? 'Rejected' : ' '                                            
     return recStatus
@@ -170,14 +169,14 @@ export default function Liquidize() {
                   { !totalRECAmountIssued.isZero() && (
                     <RowBetween align="center" height='20px'>
                       <Text fontWeight={500} fontSize={14} color={theme.text2}> Total Issued AREC Amount: </Text>
-                      <Text fontWeight={700} fontSize={14} color={theme.primary1}> {totalRECAmountIssued.toString()} KWH</Text>
+                      <Text fontWeight={700} fontSize={14} color={theme.primary1}> {totalRECAmountIssuedString} KWH</Text>
                     </RowBetween>
                   )}
                   { !totalRECAmountPending.isZero() && (
                     <RowBetween align="center" height='20px'>
-                      <Text fontWeight={500} fontSize={14} color={theme.text2}> Total pending AREC Amount: </Text>
+                      <Text fontWeight={500} fontSize={14} color={theme.text2}> Total Pending AREC Amount: </Text>
                       <Text fontWeight={700} fontSize={14} color={theme.text2}> 
-                        {totalRECAmountPending.toString()} KWH
+                        {totalRECAmountPendingString} KWH
                       </Text>
                     </RowBetween>
                   )}                  
@@ -191,21 +190,21 @@ export default function Liquidize() {
                   </TYPE.body>
                 </RowBetween>                  
                 <div style={{margin: '0.8rem 0.6rem 0.6rem'}}>
-                  <ARECSelect itemselected={!!arecSelected} onChange = {onARECSelect}>
-                    <option value="none" selected disabled hidden> Please select the AREC NFT to retire </option>                                        
+                  <ARECSelect itemselected={!!arecSelected} defaultValue="none" onChange = {onARECSelect}>
+                    <ARECOption key="none" value="none" disabled hidden> Please select the AREC NFT to retire </ARECOption>                                      
                     {allARECInfo.map((recData: RECData, index) => {
                       const optionText_ID = '0000'.concat(allARECNftTokensID[index].toString())
-                      return  <option value={index}>
+                      return  <ARECOption key={optionText_ID} value={index}> 
                                 {'AREC_'.concat(optionText_ID.substring(optionText_ID.length-4)).concat(':')}
                                 {'   '}
                                 {recPowerList[index]} {`   `} {recStatusList[index]} 
-                              </option>
+                              </ARECOption>
                     })}
                   </ARECSelect>
                 </div>
-                { (allARECInfo[0]) && (
+                { (allARECInfo[0] && (arecSelected !== undefined)) && (
                     <div style={{padding: '0.3rem 0.6rem 0.6rem 0.6rem'}}>
-                      <DetailedARECInfo recData = {allARECInfo[0]} />
+                      <DetailedARECInfo recData = {allARECInfo[arecSelected]} />
                     </div>
                 )}
               </Container>
@@ -217,7 +216,7 @@ export default function Liquidize() {
               <RowBetween align="center" height='24px'> 
                 <RowFixed>
                   <Text fontWeight={700} fontSize={16} color={theme.text2}> The selected AREC will be liquidized. </Text>
-                  <QuestionHelper bkgOff={true} small={true} info={<> The selected AREC will be liquidized,
+                  <QuestionHelper bkgOff={true} small={'s'} info={<> The selected AREC will be liquidized,
                       and some amount of AREC ERC20 token will be mint, which euqals to the renewable energy amount
                       recorded in the AREC NFT.</>} />
                 </RowFixed>

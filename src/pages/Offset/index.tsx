@@ -1,5 +1,5 @@
 import React, { useContext, useState, useCallback, useMemo } from 'react'
-import { CurrencyAmount } from '@feswap/sdk'
+import { CurrencyAmount, Fraction, JSBI } from '@feswap/sdk'
 import { HelpCircle } from 'react-feather'
 import { Text } from 'rebass'
 import styled, { ThemeContext } from 'styled-components'
@@ -106,6 +106,8 @@ export default function Offset() {
     },
     [currencyARECT, userInput]
   )
+
+  const totalUnclaimedAmountString = (new Fraction(totalUnclaimedAmount.toString(), JSBI.BigInt(1000000))).toFixed(3)
 
   const amountInputString = useMemo(()=>{
     if(!amountInput) return ''
@@ -313,7 +315,7 @@ export default function Offset() {
                   { (allOffsetActionsID !== undefined) && (
                     <RowBetween align="center" height='20px'>
                       <Text fontWeight={500} fontSize={14} color={theme.text2}> Total Retirement Amount: </Text>
-                      <Text fontWeight={700} fontSize={14} color={theme.text2}> {totalUnclaimedAmount.toString()} KWH</Text>
+                      <Text fontWeight={700} fontSize={14} color={theme.text2}> {totalUnclaimedAmountString} KWH</Text>
                     </RowBetween>
                   )}
               </AutoColumn>

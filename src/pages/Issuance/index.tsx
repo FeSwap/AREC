@@ -1,72 +1,47 @@
-import React, { useContext, useEffect, useState, useCallback } from 'react'
-//import { ArrowDown } from 'react-feather'
-//import ReactGA from 'react-ga'
+import React, { useContext, useEffect, useState, useCallback, useMemo } from 'react'
+import { Fraction, JSBI } from '@feswap/sdk'
 import { Text } from 'rebass'
 import styled, { ThemeContext } from 'styled-components'
-//import AddressInputPanel from '../../components/AddressInputPanel'
 import { ButtonError, ButtonLight, ButtonConfirmed } from '../../components/Button'
-//import { ButtonError, ButtonLight, ButtonConfirmed, ButtonPrimary } from '../../components/Button'
-
-//import Card from '../../components/Card'
 import Column, { AutoColumn } from '../../components/Column'
-//import ConfirmSwapModal from '../../components/swap/ConfirmSwapModal'
-//import CurrencyInputPanel from '../../components/CurrencyInputPanel'
 import { RowBetween, RowFixed } from '../../components/Row'
-//import AdvancedSwapDetailsDropdown from '../../components/swap/AdvancedSwapDetailsDropdown'
-//import confirmPriceImpactWithoutFee from '../../components/swap/confirmPriceImpactWithoutFee'
 import { BottomGrouping, Wrapper } from '../../components/swap/styleds'
-//import TradePrice from '../../components/swap/TradePrice'
 import ProgressSteps from '../../components/ProgressSteps'
 import PageHeader from '../../components/PageHeader'
-//import {SettingsIcon} from '../../components/Settings'
 import {StyledPageCard} from '../../components/earn/styled'
 import { useTransactionAdder } from '../../state/transactions/hooks'
-import { useArkreenTokenContract, useRECIssuanceContract, 
+import { useArkreenTokenContract, useRECIssuanceContract,
         arkreenTokenAddress, arkreenIssuanceAddress } from '../../hooks/useContract'
 import { splitSignature } from 'ethers/lib/utils'
-import { useCurrency } from '../../hooks/Tokens'
-import { tryParseAmount } from '../../state/swap/hooks'
-import { CurrencyAmount } from '@feswap/sdk'
+import { TokenAmount, Token } from '@feswap/sdk'
 import { BigNumber } from 'ethers'
 import { calculateGasMargin } from '../../utils'
 import { TransactionResponse } from '@ethersproject/providers'
 import { shortenAddress, shortenCID } from '../../utils'
-//import { darken } from 'polished'
 
 import { useActiveWeb3React } from '../../hooks'
 import { ApprovalState, useApproveCallback } from '../../hooks/useApproveCallback'
-//import useENSAddress from '../../hooks/useENSAddress'
-//import { useSwapCallback } from '../../hooks/useSwapCallback'
-//import useWrapCallback, { WrapType } from '../../hooks/useWrapCallback'
 import { useWalletModalToggle } from '../../state/application/hooks'
-//import { Field } from '../../state/swap/actions'
 import ARECIssuanceDate from '../../components/ARecIssuance'
 import { Container } from '../../components/CurrencyInputPanel'
 import { DateTime } from 'luxon'
 import useTransactionDeadline from '../../hooks/useTransactionDeadline'
-import { RECRequest } from '../../state/issuance/hooks'
-
-//import {
-//  useSwapActionHandlers,
-//  } from '../../state/swap/hooks'
-//import { useExpertModeManager } from '../../state/user/hooks'
+import { RECRequest, arkreenToken } from '../../state/issuance/hooks'
 
 import AppBody from '../AppBody'
-// import Loader from '../../components/Loader'
 import QuestionHelper from '../../components/QuestionHelper'
 
 export interface ProfileAREC {
-  readonly startDate:       string
-  readonly startEnd:        string
-  readonly minerNumber:     number
-  readonly amountTotalRE:   string
-  readonly priceToIssueREC: string
-  readonly feePayToMint:    string;
-  readonly feePayToken:     string;
-  readonly minREAmount:     string 
-  readonly cID:             string;
-  readonly region:          string;      
-  readonly url:             string;
+  startDate:       string
+  endDate:          string
+  minerNumber:     number
+  amountTotalRE:   string
+  priceToIssueREC: string
+  feePayToken:     string;
+  minREAmount:     string 
+  cID:             string;
+  region:          string;      
+  url:             string;
 }
 
  function IssanceHelpInfo() {
@@ -90,33 +65,33 @@ const ARECContainer = styled.div`
   background: transparent;
 `
 
-//box-shadow: inset 0px 0px 8px #06c;
-
-function OverallAREC() {
+function OverallAREC({recProfile}:{recProfile: ProfileAREC}) {
   const theme = useContext(ThemeContext)
+  const amountTotalREString = (new Fraction(recProfile.amountTotalRE.toString(), JSBI.BigInt(1000000))).toFixed(3)
+
   return ( <ARECContainer>
 
             <RowBetween align="center" height='24px'> 
               <RowFixed>
                 <Text fontWeight={500} fontSize={14} color={theme.text2}> Earliest AREC Date: </Text>
-                <QuestionHelper bkgOff={true} small={true} info={<>This is the date your miner(s) started mining, 
+                <QuestionHelper bkgOff={true} small={'s'} info={<>This is the date your miner(s) started mining, 
                           or the earlist date your renewable energy output is availble to mint AREC NFT.</>} />
               </RowFixed>
-              <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text3}> 2022-10-01 </Text>
+              <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text3}> {recProfile.startDate} </Text>
             </RowBetween>
             <RowBetween align="center" height="24px">
               <RowFixed>
                 <Text fontWeight={500} fontSize={14} color={theme.text2}> Latest AREC Date: </Text>
-                <QuestionHelper bkgOff={true} small={true} info={<>This is the last date your renewable energy output
+                <QuestionHelper bkgOff={true} small={'s'} info={<>This is the last date your renewable energy output
                           can be mint as an AREC NFT.</>} />
               </RowFixed>
-              <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text3}> 2022-10-30 </Text>
+              <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text3}> {recProfile.endDate} </Text>
             </RowBetween>
 
             <RowBetween align="center" height="24px">
               <RowFixed>
                 <Text fontWeight={500} fontSize={14} color={theme.text2}> Total Miners: </Text>
-                <QuestionHelper bkgOff={true} small={true} info={<>This is the number of the 
+                <QuestionHelper bkgOff={true} small={'s'} info={<>This is the number of the 
                                       miners you are holding.</>} />
               </RowFixed>
               <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text3}> 2 </Text>
@@ -125,29 +100,29 @@ function OverallAREC() {
             <RowBetween align="center" height="24px">
               <RowFixed>
                 <Text fontWeight={500} fontSize={14} color={theme.text2}> Total Available RE Amount: </Text>
-                <QuestionHelper bkgOff={true} small={true} info={<>This is the total renewable energy amount 
+                <QuestionHelper bkgOff={true} small={'s'} info={<>This is the total renewable energy amount 
                               available for minting an AREC NFT.</>} />
               </RowFixed>
-              <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text3}> 10000.00 KWH </Text>
+              <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text3}> {amountTotalREString} KWH </Text>
             </RowBetween>
 
             <RowBetween align="center" height="24px">
               <RowFixed>
                 <Text fontWeight={500} fontSize={14} color={theme.text2}> Price To Issue AREC: </Text>
-                <QuestionHelper bkgOff={true} small={true} info={<>You need to pay some AKRE tokens for issuing AREC.
+                <QuestionHelper bkgOff={true} small={'s'} info={<>You need to pay some AKRE tokens for issuing AREC.
                                   This price is used to calculate how much AKRE totally you should pay.
                                   This price is subject to change on Arkreen governance rule. </>} />
               </RowFixed>
-              <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text3}> 10.00 AKRE/MWH </Text>
+              <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text3}> {recProfile.priceToIssueREC} AKRE/MWH </Text>
             </RowBetween>
 
             <RowBetween align="center" height="24px">
               <RowFixed>
                 <Text fontWeight={500} fontSize={14} color={theme.text2}> Mininum RE Allowed To Mint: </Text>
-                <QuestionHelper bkgOff={true} small={true} info={<>Not allowed to mint AREC NFT with 
+                <QuestionHelper bkgOff={true} small={'s'} info={<>Not allowed to mint AREC NFT with 
                                                 renewable energy less than this amout.</>} />
               </RowFixed>
-              <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text3}> 50.00 KWH </Text>
+              <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text3}> {recProfile.minREAmount} KWH </Text>
             </RowBetween>
 
           </ARECContainer>
@@ -164,51 +139,81 @@ export default function Issauce() {
   const toggleWalletModal = useWalletModalToggle()
   const dateNow = DateTime.now().toFormat("yyyy-MM-dd")
 
-  const recProfile : ProfileAREC = {
+  const recProfileInit : ProfileAREC = {
     startDate:        '2022-09-03',
-    startEnd:         '2022-10-18',
+    endDate:          dateNow,
     minerNumber:      2,
-    amountTotalRE:    '12312',       //10000.122
-    priceToIssueREC:  '10.00',
-    minREAmount:      '2000.00',
-    feePayToMint:     "12000",
+    amountTotalRE:    '12312000000',       //12312000000
+    priceToIssueREC:  '20',
+    minREAmount:      '500.00',
+//    feePayToMint:     "12000",
     feePayToken:      arkreenTokenAddress,
     cID:              "bafybeihepmxz4ytc4ht67j73nzurkvsiuxhsmxk27utnopzptpo7wuigte",         
     region:           "China",                
     url:              ""        
   }
+
+  const [recProfile, setRecProfile] = useState<ProfileAREC>(recProfileInit)
   
+  //const arkreenToken = useCurrency(arkreenTokenAddress)
+
+//  const arkreenToken = new Token(ChainId.MATIC_TESTNET, arkreenTokenAddress, 18, 'AKRE', 'Arkreen DAO Token')
+
+  /*
+  const feeToPay = useMemo(()=>{
+    const fee = BigNumber.from(recProfile.amountTotalRE)
+                  .mul( BigNumber.from(recProfile.priceToIssueREC)).mul('1000000000').toString()
+   return new Fraction(fee, WEI_DENOM)
+  },[recProfile])
+
+  const feePayToMint = feeToPay.toFixed(3)
+  */
+
+  const approvalAmount: TokenAmount | undefined = useMemo(()=>{
+    const feeToPay = JSBI.multiply(JSBI.BigInt(recProfile.amountTotalRE), JSBI.BigInt(recProfile.priceToIssueREC))
+    return new TokenAmount(arkreenToken as Token, JSBI.multiply(feeToPay, JSBI.BigInt('1000000000')))
+  },[recProfile])
+  
+  //const feePayToMint = approvalAmount.toFixed(3)-
+
   const [dateSelected, setDateSelected ] = useState(false)
 
-  const amountTotalRE: number = Number(recProfile.amountTotalRE)
-  const enableRECMint = amountTotalRE>0 ? true: false
+  const amountTotalRE: BigNumber = BigNumber.from(recProfile.amountTotalRE)
+  const enableRECMint = amountTotalRE.isZero() ? false: true
 
-  const startDate: string = amountTotalRE>0 ? recProfile.startDate : dateNow
+  const startDate: string = enableRECMint ? recProfile.startDate : dateNow
   const minDate: string|undefined = enableRECMint ?  DateTime.fromFormat(recProfile.startDate, "yyyy-MM-dd")
                                                       .plus({ days: 1 }).toFormat("yyyy-MM-dd")
                                                   : undefined
 
-  const startEndString: string = amountTotalRE>0 ? recProfile.startEnd : dateNow
+  const startEndString: string = enableRECMint ? recProfile.endDate : dateNow
   const [endDate, setEndtDate ] = useState(startEndString)
 
   const handleSetEndtDate = useCallback((endDate:string) => {
     setEndtDate(endDate)
     setDateSelected(true)
+
+    let recProfile = {...recProfileInit} as ProfileAREC
+
+    recProfile.endDate = endDate
+
+    const random = BigNumber.from(Math.floor(Math.random() * 1000000000))
+    const amountTotalRE = BigNumber.from(recProfile.amountTotalRE).add(random)
+    recProfile.amountTotalRE = amountTotalRE.toString()
+    setRecProfile(recProfile)
+
     setSignatureData(null)
-  }, [setEndtDate])
+  }, [setEndtDate, recProfileInit])
 
   const swapInputError:string|undefined = undefined
   const isValid = true
   const priceImpactSeverity = 2
 
-  const arkreenToken = useCurrency(arkreenTokenAddress)
  
   const arkreenTokenContract = useArkreenTokenContract(true)
   const arkreenRECIssuanceContract = useRECIssuanceContract(true)
   
   const deadline = useTransactionDeadline()         // custom from users settings
-
-  const approvalAmount: CurrencyAmount | undefined = tryParseAmount(recProfile.feePayToMint, arkreenToken??undefined)
 
   const [signatureData, setSignatureData] = useState<{ v: number; r: string; s: string; deadline: number } | null>(null)
   
@@ -245,7 +250,7 @@ export default function Issauce() {
   const recRequest: RECRequest = {
     issuer:     RECIssuer,
     startTime:  BigNumber.from(DateTime.fromFormat(recProfile.startDate, "yyyy-MM-dd").toSeconds()),
-    endTime:    BigNumber.from(DateTime.fromFormat(recProfile.startEnd, "yyyy-MM-dd").toSeconds()),
+    endTime:    BigNumber.from(DateTime.fromFormat(endDate, "yyyy-MM-dd").toSeconds()),
     amountREC:  BigNumber.from(recProfile.amountTotalRE),
     cID:        recProfile.cID,
     region:     recProfile.region,
@@ -260,8 +265,6 @@ export default function Issauce() {
 
     const signatureToPay = [ arkreenTokenAddress, approvalAmount.raw.toString(), signatureData.deadline,
                               signatureData.v, signatureData.r, signatureData.s]
-
-    console.log("signatureToPay", signatureToPay)                              
 
     setARECTxnState({ attemptingTxn: true, txnToConfirm, showConfirm, IssueErrorMessage: undefined, txHash: undefined })
     await arkreenRECIssuanceContract.estimateGas['mintRECRequest']( recRequest, signatureToPay)
@@ -359,27 +362,8 @@ export default function Issauce() {
   // show approve flow when: no error on inputs, not approved or pending, or approved in current session
   // never show if price impact is above threshold in non expert mode
   const showApproveFlow = !(swapInputError || !arkreenTokenContract || !library || !approvalAmount || !dateSelected)
-
   const shortCID = shortenCID(recProfile.cID)
-
-//  <PageHeader header={'Swap'}> <SettingsIcon /> </PageHeader>
-// <CardNoise />
-
-/*
-<ConfirmSwapModal
-isOpen={showConfirm}
-trade={trade}
-originalTrade={tradeToConfirm}
-onAcceptChanges={handleAcceptChanges}
-attemptingTxn={attemptingTxn}
-txHash={txHash}
-recipient={recipient}
-allowedSlippage={allowedSlippage}
-onConfirm={handleRECRequest}
-swapErrorMessage={swapErrorMessage}
-onDismiss={handleConfirmDismiss}
-/>
-*/
+  const amountTotalREString = (new Fraction(amountTotalRE.toString(), JSBI.BigInt(1000000))).toFixed(3)
 
   return (
     <>
@@ -392,10 +376,10 @@ onDismiss={handleConfirmDismiss}
 
           <AutoColumn gap={'md'}>
             <ARECIssuanceDate active={enableRECMint}  
-              minDate= {minDate} maxDate= {enableRECMint ? recProfile.startEnd : undefined}
+              minDate= {minDate} maxDate= {enableRECMint ? dateNow : undefined}
               startDate= {startDate}
               endDate = {endDate} onChangeDate={handleSetEndtDate} id="issuace_date" >
-                <OverallAREC />
+                <OverallAREC recProfile={recProfile}/>
             </ARECIssuanceDate>
          
             <Container style={{boxShadow:"inset 0px 0px 8px #06c"}}>
@@ -413,13 +397,13 @@ onDismiss={handleConfirmDismiss}
                   <RowBetween align="center" height='20px'>
                     <Text fontWeight={500} fontSize={14} color={theme.text2}> Total AREC Amount: </Text>
                     <Text fontWeight={700} fontSize={14} 
-                        color={(signatureData !== null) ? theme.primary1: theme.text2}> 3600.00 KWH </Text>
+                        color={(signatureData !== null) ? theme.primary1: theme.text2}> {amountTotalREString} KWH </Text>
                   </RowBetween>
 
                   <RowBetween align="center" height='20px'>
                     <Text fontWeight={500} fontSize={14} color={theme.text2}> Total Issuance Cost: </Text>
                     <Text fontWeight={700} fontSize={14} 
-                          color={(signatureData !== null) ? theme.primary1: theme.text2}> 36.00 AKRE </Text>
+                          color={(signatureData !== null) ? theme.primary1: theme.text2}> {approvalAmount?.toFixed(3)} AKRE </Text>
                   </RowBetween>
 
                   { (signatureData !== null) && (
@@ -438,12 +422,22 @@ onDismiss={handleConfirmDismiss}
           <BottomGrouping>
             {!account ? (
               <ButtonLight onClick={toggleWalletModal}>Connect Wallet</ButtonLight>
-            ) :  !dateSelected ? (
-              <ButtonLight> Select End AREC Date </ButtonLight>
-            ) : (!arkreenTokenContract || !library || !approvalAmount ) ? (
+            ) : (!arkreenTokenContract || !library) ? (
+              <ButtonError disabled={true} error={false}>
+                <Text fontSize={20} fontWeight={500}>
+                  Waiting AREC Info
+                </Text>
+              </ButtonError>
+            ) : (!approvalAmount || !enableRECMint) ? (
               <ButtonError disabled={true} error={false}>
                 <Text fontSize={20} fontWeight={500}>
                   No AREC to Mint
+                </Text>
+              </ButtonError>
+            ): !dateSelected ? (
+              <ButtonError disabled={true} error={false}>
+                <Text fontSize={20} fontWeight={500}>
+                  Select End AREC Date
                 </Text>
               </ButtonError>
             ) : (

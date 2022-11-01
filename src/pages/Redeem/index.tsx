@@ -1,4 +1,5 @@
 import React, { useContext, useState, useCallback, useMemo } from 'react'
+import { Fraction, JSBI } from '@feswap/sdk'
 import { Text } from 'rebass'
 import { ThemeContext } from 'styled-components'
 import { ButtonError, ButtonLight } from '../../components/Button'
@@ -10,8 +11,8 @@ import PageHeader from '../../components/PageHeader'
 import {StyledPageCard} from '../../components/earn/styled'
 import { useTransactionAdder } from '../../state/transactions/hooks'
 import { useRECIssuanceContract } from '../../hooks/useContract'
-import { useCurrency } from '../../hooks/Tokens'
-import { tryParseAmount } from '../../state/swap/hooks'
+//import { useCurrency } from '../../hooks/Tokens'
+//import { tryParseAmount } from '../../state/swap/hooks'
 import { calculateGasMargin, isAddress } from '../../utils'
 import { TransactionResponse } from '@ethersproject/providers'
 import { useGetUserARECList } from '../../state/issuance/hooks'
@@ -78,9 +79,9 @@ export default function Redeem() {
           totalRECAmountPending
         } = useGetUserARECList()
 
-  const arkreenTokenAddress = "0x54e1c534f59343c56549c76d1bdccc8717129832"
-  const arkreenToken = useCurrency(arkreenTokenAddress)
-  
+  const totalRECAmountIssuedString = (new Fraction(totalRECAmountIssued.toString(), JSBI.BigInt(1000000))).toFixed(3)
+  const totalRECAmountPendingString = (new Fraction(totalRECAmountPending.toString(), JSBI.BigInt(1000000))).toFixed(3)
+
   const arkreenRECIssuanceContract = useRECIssuanceContract(true)
   
   const [{ showConfirm, txnToConfirm, attemptingTxn, errorMessage, txHash }, setARECTxnState] = useState<{
@@ -118,7 +119,6 @@ export default function Redeem() {
   const [arecSelected, setARECSelected] = useState<number|undefined>()
 
   const onARECSelect = useCallback( (arecSelect) => {
-    console.log("FFFFFFFFFFFFFFF",  arecSelect.target.value)
     setARECSelected(arecSelect.target.value)
   },[setARECSelected])
 
@@ -129,8 +129,7 @@ export default function Redeem() {
   },[allARECNftTokensID, arecSelected])
 
   const recPowerList = allARECInfo.map((recData: RECData) => {
-    const recPowerAmount = arkreenToken ? tryParseAmount(recData.amountREC.toString(), arkreenToken) : undefined
-    return (recPowerAmount?.toFixed(3, { groupSeparator: ',' }) ?? '0').concat('_KWH')
+    return (new Fraction(recData.amountREC.toString(), JSBI.BigInt(1000000))).toFixed(3, { groupSeparator: ',' }).concat(' KWH')
   })
 
   const recStatusList = allARECInfo.map((recData: RECData) => {
@@ -314,14 +313,14 @@ export default function Redeem() {
                   { !totalRECAmountIssued.isZero() && (
                     <RowBetween align="center" height='20px'>
                       <Text fontWeight={500} fontSize={14} color={theme.text2}> Total Issued AREC Amount: </Text>
-                      <Text fontWeight={700} fontSize={14} color={theme.primary1}> {totalRECAmountIssued.toString()} KWH</Text>
+                      <Text fontWeight={700} fontSize={14} color={theme.primary1}> {totalRECAmountIssuedString} KWH</Text>
                     </RowBetween>
                   )}
                   { !totalRECAmountPending.isZero() && (
                     <RowBetween align="center" height='20px'>
                       <Text fontWeight={500} fontSize={14} color={theme.text2}> Total Pending AREC Amount: </Text>
                       <Text fontWeight={700} fontSize={14} color={theme.text2}> 
-                        {totalRECAmountPending.toString()} KWH
+                        {totalRECAmountPendingString} KWH
                       </Text>
                     </RowBetween>
                   )}                  
@@ -335,11 +334,11 @@ export default function Redeem() {
                   </TYPE.body>
                 </RowBetween>                  
                 <div style={{margin: '0.8rem 0.6rem 0.6rem'}}>
-                  <ARECSelect itemselected={!!arecSelected} onChange = {onARECSelect}>
-                    <ARECOption value="none" selected disabled hidden> Please select the AREC NFT to retire </ARECOption>                                      
+                  <ARECSelect itemselected={!!arecSelected} defaultValue="none" onChange = {onARECSelect}>
+                    <ARECOption key="none" value="none" disabled hidden> Please select the AREC NFT to retire </ARECOption>                                      
                     {allARECInfo.map((recData: RECData, index) => {
                       const optionText_ID = '0000'.concat(allARECNftTokensID[index].toString())
-                      return  <ARECOption value={index}> 
+                      return  <ARECOption key={optionText_ID} value={index}> 
                                 {'AREC_'.concat(optionText_ID.substring(optionText_ID.length-4)).concat(':')}
                                 {'   '}
                                 {recPowerList[index]} {`   `} {recStatusList[index]} 

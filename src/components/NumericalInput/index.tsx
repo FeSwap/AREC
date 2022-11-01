@@ -48,17 +48,28 @@ export const Input = React.memo(function InnerInput({
   value,
   onUserInput,
   placeholder,
+  decLength,
   ...rest
 }: {
   value: string | number
   onUserInput: (input: string) => void
   error?: boolean
   fontSize?: string
+  decLength?: number
   align?: 'right' | 'left'
 } & Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'onChange' | 'as'>) {
   const enforcer = (nextUserInput: string) => {
     if (nextUserInput === '' || inputRegex.test(escapeRegExp(nextUserInput))) {
-      onUserInput(nextUserInput)
+
+      let decimals = nextUserInput.split('.')
+      if( (decLength !== undefined) && (decimals.length === 2) ) {
+        if(decimals[1].length > decLength) {
+          decimals[1] = decimals[1].substring(0, decLength)
+        }
+        onUserInput(decimals[0]+'.'+decimals[1])
+      } else {
+        onUserInput(nextUserInput)
+      }
     }
   }
 

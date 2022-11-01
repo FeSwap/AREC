@@ -1,26 +1,22 @@
-import React, { useContext, useEffect, useState, useCallback } from 'react'
+import React, { useContext, useState, useCallback } from 'react'
+import { Fraction, JSBI } from '@feswap/sdk'
 import { Text } from 'rebass'
 import styled, { ThemeContext } from 'styled-components'
 import { ButtonLight, ButtonPrimary} from '../../components/Button'
-import Column, { AutoColumn } from '../../components/Column'
+import { AutoColumn } from '../../components/Column'
 import { RowBetween, RowFixed } from '../../components/Row'
 import { BottomGrouping, Wrapper } from '../../components/swap/styleds'
-import ProgressSteps from '../../components/ProgressSteps'
+//import ProgressSteps from '../../components/ProgressSteps'
 import PageHeader from '../../components/PageHeader'
 import {StyledPageCard} from '../../components/earn/styled'
 import { useTransactionAdder } from '../../state/transactions/hooks'
-import { useArkreenTokenContract, useRECIssuanceContract, 
-        arkreenTokenAddress, arkreenIssuanceAddress } from '../../hooks/useContract'
-import { useCurrency } from '../../hooks/Tokens'
-import { tryParseAmount } from '../../state/swap/hooks'
-import { CurrencyAmount } from '@feswap/sdk'
-import { BigNumber } from 'ethers'
+import { useRECIssuanceContract } from '../../hooks/useContract'
 import { calculateGasMargin } from '../../utils'
 import { TransactionResponse } from '@ethersproject/providers'
 import { shortenAddress, shortenCID } from '../../utils'
 import { useGetPendingARECList } from '../../state/issuance/hooks'
 import { useActiveWeb3React } from '../../hooks'
-import { ApprovalState, useApproveCallback } from '../../hooks/useApproveCallback'
+//import { ApprovalState, useApproveCallback } from '../../hooks/useApproveCallback'
 import { useWalletModalToggle } from '../../state/application/hooks'
 import { Container } from '../../components/CurrencyInputPanel'
 import { DateTime } from 'luxon'
@@ -65,19 +61,18 @@ const ARECContainer = styled.div`
 
 function DetailedARECInfo({recData}:{recData: RECData}) {
   const theme = useContext(ThemeContext)
-  const arkreenToken = useCurrency(arkreenTokenAddress)
 
   const startDate = DateTime.fromSeconds(recData.startTime) ?? ''
   const endDate = DateTime.fromSeconds(recData.endTime) ?? ''
 
-  const powerAmount = arkreenToken ? tryParseAmount(recData.amountREC.toString(), arkreenToken) : undefined
-  const powerAmountString = (powerAmount?.toFixed(3, { groupSeparator: ',' }) ?? '0').concat(' KWH')
+  const powerAmount = new Fraction(recData.amountREC.toString(), JSBI.BigInt(1000000))
+  const powerAmountString = (powerAmount?.toFixed(3, { groupSeparator: ',' }) ?? '0').concat(' KWH')  
   
   return ( <ARECContainer>
             <RowBetween align="center" height='24px'> 
               <RowFixed>
                 <Text fontWeight={500} fontSize={14} color={theme.text2}> AREC Issuer: </Text>
-                <QuestionHelper bkgOff={true} small={true} info={<>This is the name of the entity issuing AREC NFT.</>} />
+                <QuestionHelper bkgOff={true} small={'s'} info={<>This is the name of the entity issuing AREC NFT.</>} />
               </RowFixed>
               <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text1}> 
                 {shortenAddress(recData.issuer,6)}
@@ -87,7 +82,7 @@ function DetailedARECInfo({recData}:{recData: RECData}) {
             <RowBetween align="center" height='24px'> 
               <RowFixed>
                 <Text fontWeight={500} fontSize={14} color={theme.text2}> Earliest AREC Date: </Text>
-                <QuestionHelper bkgOff={true} small={true} info={<>This is the earlies date when 
+                <QuestionHelper bkgOff={true} small={'s'} info={<>This is the earlies date when 
                                       the renewable energy of the selected AREC is generated.</>} />
               </RowFixed>
               <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text1}> 
@@ -98,7 +93,7 @@ function DetailedARECInfo({recData}:{recData: RECData}) {
             <RowBetween align="center" height="24px">
               <RowFixed>
                 <Text fontWeight={500} fontSize={14} color={theme.text2}> Latest AREC Date: </Text>
-                <QuestionHelper bkgOff={true} small={true} info={<>This is the last date when
+                <QuestionHelper bkgOff={true} small={'s'} info={<>This is the last date when
                                     the renewable energy of the selected AREC is generated.</>} />
               </RowFixed>
               <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text1}> 
@@ -109,7 +104,7 @@ function DetailedARECInfo({recData}:{recData: RECData}) {
             <RowBetween align="center" height="24px">
               <RowFixed>
                 <Text fontWeight={500} fontSize={14} color={theme.text2}> Total RE Amount: </Text>
-                <QuestionHelper bkgOff={true} small={true} info={<>This is the total renewable energy amount 
+                <QuestionHelper bkgOff={true} small={'s'} info={<>This is the total renewable energy amount 
                               of the selected AREC NFT.</>} />
               </RowFixed>
               <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text1}> {powerAmountString} </Text>
@@ -118,7 +113,7 @@ function DetailedARECInfo({recData}:{recData: RECData}) {
             <RowBetween align="center" height="24px">
               <RowFixed>
                 <Text fontWeight={500} fontSize={14} color={theme.text2}> AREC cID: </Text>
-                <QuestionHelper bkgOff={true} small={true} info={<>This is the cID of the renewable energy data 
+                <QuestionHelper bkgOff={true} small={'s'} info={<>This is the cID of the renewable energy data 
                               in ipfs, with which the selected AREC RE amount can be verified.</>} />
               </RowFixed>
               <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text1}> {shortenCID(recData.cID)} </Text>
@@ -131,54 +126,16 @@ function DetailedARECInfo({recData}:{recData: RECData}) {
 //export default function Swap({ history }: RouteComponentProps) {
 export default function RECManager() {
 
-  const { account, chainId, library } = useActiveWeb3React()
+  const { account, chainId } = useActiveWeb3React()
   const theme = useContext(ThemeContext)
 
   // toggle wallet when disconnected
   const toggleWalletModal = useWalletModalToggle()
-
-
   const { allARECInfo, 
           allARECNftTokensID, 
         } = useGetPendingARECList()
- 
-  const recProfile : ProfileAREC = {
-    startDate:        '2022-09-03',
-    startEnd:         '2022-10-18',
-    minerNumber:      2,
-    amountTotalRE:    '12312',       //10000.122
-    priceToIssueREC:  '10.00',
-    minREAmount:      '2000.00',
-    feePayToMint:     "12000",
-    feePayToken:      arkreenTokenAddress,
-    cID:              "bafybeihepmxz4ytc4ht67j73nzurkvsiuxhsmxk27utnopzptpo7wuigte",         
-    region:           "China",                
-    url:              ""        
-  }
-  
-  const [dateSelected, setDateSelected ] = useState(false)
-  const swapInputError:string|undefined = undefined
-  const arkreenToken = useCurrency(arkreenTokenAddress)
 
-  const arkreenTokenContract = useArkreenTokenContract(true)
   const arkreenRECIssuanceContract = useRECIssuanceContract(true)
-  
-  const approvalAmount: CurrencyAmount | undefined = tryParseAmount(recProfile.feePayToMint, arkreenToken??undefined)
-
-  const [signatureData ] = useState<{ v: number; r: string; s: string; deadline: number } | null>(null)
-  
-  const [approval] = useApproveCallback(approvalAmount, arkreenIssuanceAddress)
-
-  // check if user has gone through approval process, used to show two step buttons, reset on token change
-  const [approvalSubmitted, setApprovalSubmitted] = useState<boolean>(false)
-
-  // mark when a user has submitted an approval, reset onTokenSelection for input field
-  useEffect(() => {
-    if (approval === ApprovalState.PENDING) {
-      setApprovalSubmitted(true)
-    }
-  }, [approval, approvalSubmitted])
-
 
   // const [{ showConfirm, txnToConfirm, IssueErrorMessage, attemptingTxn, txHash }, setARECTxnState] = useState<{
   const [{ showConfirm, txnToConfirm }, setARECTxnState] = useState<{
@@ -197,32 +154,15 @@ export default function RECManager() {
 
   const addTransaction = useTransactionAdder()
 
-  const RECIssuer = '0x576Ab950B8B3B18b7B53F7edd8A47986a44AE6F4'
-  const recRequest: RECRequest = {
-    issuer:     RECIssuer,
-    startTime:  BigNumber.from(DateTime.fromFormat(recProfile.startDate, "yyyy-MM-dd").toSeconds()),
-    endTime:    BigNumber.from(DateTime.fromFormat(recProfile.startEnd, "yyyy-MM-dd").toSeconds()),
-    amountREC:  BigNumber.from(recProfile.amountTotalRE),
-    cID:        recProfile.cID,
-    region:     recProfile.region,
-    url:        recProfile.url,
-    memo:       ''
-  }
+  const [arecSelected, setARECSelected] = useState<number|undefined>()
 
-    const [arecSelected, setARECSelected] = useState<number|undefined>()
-
-    const onARECSelect = useCallback( (arecSelect) => {
-      setARECSelected(arecSelect.target.value)
-    },[setARECSelected])
+  const onARECSelect = useCallback( (arecSelect) => {
+    setARECSelected(arecSelect.target.value)
+  },[setARECSelected])
   
-    async function handleRECCertify() {
-
-      if((!arkreenRECIssuanceContract) || (arecSelected === undefined))
-      {
-        console.log("arkreenRECIssuanceContract",  arkreenRECIssuanceContract)
-        return
-      }
-  
+  async function handleRECCertify() {
+      if((!arkreenRECIssuanceContract) || (arecSelected === undefined)) return
+ 
       const ARECID = allARECNftTokensID[arecSelected]
       const ARECIDString ='00000000'.concat(ARECID.toString())
       const ARECIDStr =ARECIDString.substring(ARECIDString.length-8)
@@ -233,9 +173,9 @@ export default function RECManager() {
           await arkreenRECIssuanceContract.certifyRECRequest(ARECID, ARECIDStr, 
                                             { gasLimit: calculateGasMargin(estimatedGasLimit) })
           .then((response: TransactionResponse) => {
-            setDateSelected(false)
+            setARECSelected(undefined)
             addTransaction(response, {
-              summary: `Request AREC issued by ${shortenAddress(recRequest.issuer,6)}`
+              summary: `Confirm AREC Issuance: ${ARECID.toString()}`
             })
             setARECTxnState({ attemptingTxn: false, txnToConfirm, showConfirm, IssueErrorMessage: undefined, txHash: response.hash })
           })
@@ -255,11 +195,8 @@ export default function RECManager() {
         })
       }
   
-  const showApproveFlow = !(swapInputError || !arkreenTokenContract || !library || !approvalAmount || !dateSelected)
-
-  const recPowerList = allARECInfo.map((recData: RECData, index) => {
-    const recPowerAmount = arkreenToken ? tryParseAmount(recData.amountREC.toString(), arkreenToken) : undefined
-    return (recPowerAmount?.toFixed(3, { groupSeparator: ',' }) ?? '0').concat('_KWH')
+  const recPowerList = allARECInfo.map((recData: RECData) => {
+    return (new Fraction(recData.amountREC.toString(), JSBI.BigInt(1000000))).toFixed(3, { groupSeparator: ',' }).concat(' KWH')
   })
 
   const recStatusList = allARECInfo.map((recData: RECData) => {
@@ -298,6 +235,7 @@ export default function RECManager() {
 
                   <div style={{margin: '0.8rem 0.6rem 0rem'}}>
                     <ARECSelect itemselected={!!arecSelected} onChange = {onARECSelect}>
+                      <option disabled> Select AREC NFT to confirm </option>   
                       {allARECInfo.map((recData: RECData, index) => {
                         const optionText_ID = '0000'.concat(allARECNftTokensID[index].toString())
                         return  <option value={index} > 
@@ -316,19 +254,15 @@ export default function RECManager() {
               </Container>
           </AutoColumn>
           <BottomGrouping>
-            {!account && (
+            {(!account) ? (
               <ButtonLight onClick={toggleWalletModal}>Connect Wallet</ButtonLight>
+            ) : (
+              <RowBetween marginTop="10px">
+                    <ButtonPrimary fontSize={20} width="100%" onClick={() => {handleRECCertify()}}>
+                      Confirm AREC NFT 
+                    </ButtonPrimary>
+              </RowBetween>
             )}
-            {showApproveFlow && (
-              <Column style={{ marginTop: '1rem' }}>
-                <ProgressSteps steps={[signatureData !== null]} />
-              </Column>
-            )}
-            <RowBetween marginTop="10px">
-                  <ButtonPrimary fontSize={20} width="100%" onClick={() => {handleRECCertify()}}>
-                    Confirm AREC NFT 
-                  </ButtonPrimary>
-            </RowBetween>
           </BottomGrouping>
         </Wrapper>
         </StyledPageCard>
