@@ -31,6 +31,6 @@ jobs:
         with:
           branch: gh-pages
           repository-name: FeSwap/AREC-Dapp
-          token: ${{ secrets.GH_DEPLOY_TOKEN }}
+          token: ${{ secrets.AREC_DEPLOY }}
           folder: build     # The deployment folder should match the name of the artifact. Even though our project builds into the 'build' folder the artifact name of 'site' must be placed here.
           
