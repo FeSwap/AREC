@@ -30,7 +30,7 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@4.1.4
         with:
           branch: gh-pages
-          repository-name: FeSwap/Dapp
+          repository-name: FeSwap/AREC-Dapp
           token: ${{ secrets.GH_DEPLOY_TOKEN }}
           folder: build     # The deployment folder should match the name of the artifact. Even though our project builds into the 'build' folder the artifact name of 'site' must be placed here.
           
