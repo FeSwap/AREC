@@ -36,7 +36,7 @@ import usePrevious from '../../hooks/usePrevious'
 
 const HeaderFrame = styled.div`
   display: grid;
-  grid-template-columns: 48px 1fr 120px;
+  grid-template-columns: 1fr 120px;
   align-items: center;
   justify-content: space-between;
   align-items: center;
@@ -307,30 +307,23 @@ function Header({ history }: RouteComponentProps) {
         <UniBalanceContent setShowUniBalanceModal={setShowUniBalanceModal} />
       </Modal>
       {
-      (history.location.pathname === '/swap') ?
-        <HeaderLinks>
-          <StyledNavLink id={`swap-nav-link`} to={'/swap'}>
-            Swap
-          </StyledNavLink>
-          <StyledNavLink id={`pool-nav-link`} to={'/liquidity'} >
-            Liquidity
-          </StyledNavLink>
-          <StyledNavLink id={`stake-nav-link`} to={'/fesw'}>
-            Mining
-          </StyledNavLink>
-          <StyledNavLink id={`nft-nav-link`} to={'/nft'}>
-            NFT
-          </StyledNavLink>
-          <StyledNavLink id={`dao-nav-link`} to={'/vote'}>
-            DAO
-          </StyledNavLink>
-          <StyledExternalLink id={`charts-nav-link`} href={'https://info.feswap.io'}>
-            Charts <span style={{ fontSize: '11px' }}>↗</span>
-          </StyledExternalLink>	 
-          <StyledExternalLink id={`docs-nav-link`} href={'https://www.feswap.io/docs'}>
-            Docs <span style={{ fontSize: '11px' }}>↗</span>
-          </StyledExternalLink>	 
-        </HeaderLinks> : <div/>
+        ((history.location.pathname === '/swap') || 
+          (history.location.pathname === '/add') ||
+          (history.location.pathname === '/vote')) ?
+          <HeaderLinks>
+            <StyledNavLink id={`swap-nav-link`} to={'/swap'}>
+              Swap
+            </StyledNavLink>
+            <StyledNavLink id={`pool-nav-link`} to={'/add/ETH'} >
+              Liquidity
+            </StyledNavLink>
+            <StyledNavLink id={`dao-nav-link`} to={'/vote'}>
+              DAO
+            </StyledNavLink>
+            <StyledExternalLink id={`charts-nav-link`} href={'https://info.feswap.io'}>
+              Charts <span style={{ fontSize: '11px' }}>↗</span>
+            </StyledExternalLink>	 
+          </HeaderLinks> : <div/>
       }
       <HeaderControls>
         <HeaderElement>

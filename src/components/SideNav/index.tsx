@@ -9,11 +9,13 @@ import { withRouter } from 'react-router-dom'
 import { TrendingUp, PieChart, CheckCircle, LogOut, Repeat, Award, Heart,
           MessageCircle, BookOpen, Link2, List } from 'react-feather'
 // DollarSign, Link2, List
-import Link from '../Link'
+// import Link from '../Link'
 //import { Link } from 'rebass'
 import { TogglePic } from '../Toggle'
 import { RouteComponentProps } from 'react-router-dom'
 import { useDarkModeManager } from '../../state/user/hooks'
+import { MenuItem } from '../../components/Menu/'
+//import { Text } from 'rebass'
 
 const Wrapper = styled.div<{isMobile?: boolean}>`
   height: ${({ isMobile }) => (isMobile ? 'initial' : '100vh')};
@@ -24,8 +26,7 @@ const Wrapper = styled.div<{isMobile?: boolean}>`
   top: 0px;
   z-index: 9999;
   box-sizing: border-box;
-  /* background-color: #1b1c22; */
-  background: linear-gradient( rgba(0,192,239,0.5), rgba(0,192,239,0.5));
+  background: rgba(0,192,239,0.5);
   color: ${({ theme }) => theme.bg2};
 
   @media screen and (max-width: 800px) {
@@ -37,6 +38,8 @@ const Wrapper = styled.div<{isMobile?: boolean}>`
     padding: 1rem;
   }
 `
+
+// Good: background: linear-gradient( rgba(0,192,239,0.5), rgba(0,192,239,0.5));
 
 //background: linear-gradient(193.68deg, #6000A0 0.68%, #300060 100.48%);
 // background: linear-gradient( rgba(0,192,239,0.5), rgba(0,192,239,0.5));
@@ -68,6 +71,7 @@ const MobileWrapper = styled.div`
   align-items: center;
 `
 
+/*
 const HeaderText = styled.div`
   margin-right: 0.5rem;
   font-size: 0.825rem;
@@ -85,6 +89,7 @@ const HeaderText = styled.div`
     color: ${({ theme }) => theme.text2};
   }
 `
+*/
 
 /*
 const Polling = styled.div`
@@ -194,30 +199,22 @@ function SideNav({ history }: RouteComponentProps) {
             )}
           </AutoColumn>
           <AutoColumn gap="0.5rem" style={{ marginLeft: '.75rem', marginBottom: '4rem' }}>
-            <HeaderText>
-              <Link href="https://wwww.arkreen.com" target="_blank">
-                <Link2 size={14} style={{ marginRight: '.75rem' }} />
-                Arkreen 
-              </Link>
-            </HeaderText>
-            <HeaderText>
-              <Link href="http://150.109.18.12:9800/" target="_blank">
-                <List size={14} style={{ marginRight: '.75rem' }} />
-                Explorer
-              </Link>
-            </HeaderText>
-            <HeaderText>
-              <Link href="https://docs.arkreen.com" target="_blank">
-                <BookOpen size={14} style={{ marginRight: '.75rem' }} />
-                Docs
-              </Link>
-            </HeaderText>
-            <HeaderText>
-              <Link href="https://twitter.com/arkreen_network" target="_blank">
-                <MessageCircle size={14} style={{ marginRight: '.75rem' }} />
-                Twitter
-              </Link>
-            </HeaderText>
+            <MenuItem id="link" href="https://wwww.arkreen.com" style={{padding:'0px'}}>
+                <Link2 size={14} />
+                <span style={{fontWeight:400, fontSize:'14px'}}> Arkreen </span>
+            </MenuItem>
+            <MenuItem id="link" href="https://explorer.arkreen.com/" style={{padding:'0px'}}>
+                <List size={14} />
+                <span style={{fontWeight:400, fontSize:'14px'}}> Explorer </span>
+            </MenuItem>
+            <MenuItem id="link" href="https://docs.arkreen.com" style={{padding:'0px'}}>
+                <BookOpen size={14} />
+                <span style={{fontWeight:400, fontSize:'14px'}}> Docs </span>
+            </MenuItem>
+            <MenuItem id="link" href="https://twitter.com/arkreen_network" style={{padding:'0px'}}>
+                <MessageCircle size={14} />
+                <span style={{fontWeight:400, fontSize:'14px'}}> Twitter </span>
+            </MenuItem>
             <TogglePic isActive={isDark} toggle={toggleDarkMode} />
           </AutoColumn>
         </DesktopWrapper>
