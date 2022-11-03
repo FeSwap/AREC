@@ -1,71 +1,62 @@
-import React from 'react'
-//import React, { useState } from 'react'
-
-//import { Box } from 'rebass'
-import styled from 'styled-components'
-
-//import { AutoRow } from '../../components/Row'
-//import { AutoRow, RowBetween } from '../../components/Row'
-
-import { RowBetween, Divider, Gap } from '../../components/Row'
+import React, { useContext, useMemo } from 'react'
+import { Fraction, JSBI } from '@feswap/sdk'
+//import { darken } from 'polished'
+import { Text } from 'rebass'
+import styled, { ThemeContext } from 'styled-components'
+//import { ButtonError, ButtonLight } from '../../components/Button'
+import { StyledPageCard } from '../../components/earn/styled'
 import { AutoColumn } from '../../components/Column'
-//import {DataCard} from '../../components/earn/styled'
+//import { HelpCircle } from 'react-feather'
+import { RowBetween } from '../../components/Row'
+import { Wrapper } from '../../components/swap/styleds'
 import PageHeader from '../../components/PageHeader'
-import { CardNoise } from '../../components/earn/styled'
-
-//import PairList from '../../components/PairList'
-//import TopTokenList from '../../components/TokenList'
-//import TxnList from '../../components/TxnList'
-//import GlobalChart from '../../components/GlobalChart'
-//import Search from '../../components/Search'
-//import GlobalStats from '../../components/GlobalStats'
-
-//import { useGlobalData, useGlobalTransactions } from '../../contexts/GlobalData'
-//import { useAllPairData } from '../../contexts/PairData'
-//import { useMedia } from 'react-use'
-//import Panel from '../../components/Panel'
-//import { useAllTokenData } from '../../contexts/TokenData'
-//import { formattedNum, formattedPercent } from '../../utils'
+//import { useTransactionAdder } from '../../state/transactions/hooks'
+//import { useRECIssuanceContract } from '../../hooks/useContract'
+//import { useCurrency } from '../../hooks/Tokens'
+//import { tryParseAmount } from '../../state/swap/hooks'
+//import { calculateGasMargin, isAddress } from '../../utils'
+//import { TransactionResponse } from '@ethersproject/providers'
+import { useOverallARECInfo } from '../../state/issuance/hooks'
+import Loader from '../../components/Loader'
+//import { useActiveWeb3React } from '../../hooks'
+//import { useWalletModalToggle } from '../../state/application/hooks'
+import { Container } from '../../components/CurrencyInputPanel'
 import { TYPE } from '../../theme'
-//import AppBody from '../AppBody'
-// import { TYPE, ThemedBackground } from '../../Theme'
+//import { RECData, REC_STARUS, RECRequest } from '../../state/issuance/hooks'
+//import TransactionConfirmationModal, { ConfirmationModalContentTitle } from '../../components/TransactionConfirmationModal'
+//import { ZERO_ADDRESS } from '../../constants'
+//import { MouseoverTooltip } from '../../components/Tooltip'
 
-import { transparentize } from 'polished'
-//import { CustomLink } from '../../components/Link'
+import AppBody from '../AppBody'
+import QuestionHelper from '../../components/QuestionHelper'
+//import { GetCerticateInfo, ARECSelect, ARECOption, ButtonRow, DetailedARECInfo } from '../../components/ARecIssuance'
 
-//import { PageWrapper, ContentWrapper } from '../../components'
+export interface ProfileAREC {
+  readonly startDate:       string
+  readonly startEnd:        string
+  readonly minerNumber:     number
+  readonly amountTotalRE:   string
+  readonly priceToIssueREC: string
+  readonly feePayToMint:    string;
+  readonly feePayToken:     string;
+  readonly minREAmount:     string 
+  readonly cID:             string;
+  readonly region:          string;      
+  readonly url:             string;
+}
 
-//import CheckBox from '../../components/Checkbox'
-//import QuestionHelper from '../../components/QuestionHelper'
+const ARECContainer = styled.div`
+  border-radius: 6px;
+  border: 1px solid ${({ theme }) => theme.bg4};
+  padding: 0.3rem 0.6rem 0.3rem 0.6rem;
+  background: transparent;
+`
 
 /*
-export const PageWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  padding-top: 0px;
-  padding-bottom: 80px;
-
-  @media screen and (max-width: 600px) {
-    & > * {
-      padding: 0 12px;
-    }
-  }
-`
-*/
-
-/*
-const PageWrapper = styled(AutoColumn)`
-  max-width: 1080px;
-  width: 100%;
-`
-*/
-
-
 const DataRow = styled(RowBetween)`
-  justify-content: start;
+  justify-content: center;
   overflow: hidden;
   border-radius: 12px;
-  display: flex;
   gap: 12px;
 
   ${({ theme }) => theme.mediaWidth.upToSmall`
@@ -73,77 +64,9 @@ const DataRow = styled(RowBetween)`
     gap: 12px;
   `};
 `
+*/
 
-export const ContentWrapper = styled.div`
-  display: grid;
-  justify-content: start;
-  align-items: start;
-  grid-template-columns: 1fr;
-  grid-gap: 24px;
-  max-width: 1440px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 0 2rem;
-  box-sizing: border-box;
-  @media screen and (max-width: 1180px) {
-    grid-template-columns: 1fr;
-    padding: 0 1rem;
-  }
-`
-
-//background: radial-gradient(76.02% 75.41% at 40% 0%, #FFB6C1 30%, #E6E6FA 100%);
-
-const DataCard = styled(AutoColumn)<{ disabled?: boolean }>`
-  border-radius: 10px;
-  width: 100%;
-  position: relative;
-  overflow: hidden;
-`
-
-//background: radial-gradient(76.02% 75.41% at 40% 0%, #FFB6C1 30%, #E6E6FA 100%);
-
-const PoolData = styled(DataCard)`
-  border: 1px solid rgba(0, 0, 0, 0.3);
-  border-radius: 12px;
-  padding: 12px;
-  background: rgba(0,100,30,0.3);
-  z-index: 1;
-`
-
-//max-width: 300px;
-
-interface InfoDataProps {
-  tag: string
-  info: string
-}
-
-function InfoData({tag, info}: InfoDataProps) {
-  return (
-    <PoolData>
-      <AutoColumn gap="sm">
-        <TYPE.mediumHeader style={{ margin: 0, whiteSpace: 'nowrap' }}>{tag} </TYPE.mediumHeader>
-        <TYPE.body fontSize={22} fontWeight={300} style={{ textAlign: 'center' }}>
-          {info} 
-        </TYPE.body>
-      </AutoColumn>
-    </PoolData>  
-  )
-}
-
-
-/*
-const ListOptions = styled(AutoRow)`
-  height: 40px;
-  width: 100%;
-  font-size: 1.25rem;
-  font-weight: 600;
-
-  @media screen and (max-width: 640px) {
-    font-size: 1rem;
-  }
-`
-
-const GridRow = styled.div`
+const DataRow = styled.div`
   display: grid;
   width: 100%;
   grid-template-columns: 1fr 1fr;
@@ -151,173 +74,214 @@ const GridRow = styled.div`
   align-items: start;
   justify-content: space-between;
 `
+
+/*
+const PoolData = styled(DataCard)`
+  background-color: theme.primary1;
+  border-radius: 12px;
+  padding: 12px;
+  z-index: 1;
+`
 */
 
-export const BodyWrapper = styled.div`
-  position: relative;
-  max-width: 1080px;
-  width: 100%;
-  background:  radial-gradient(91.85% 100% at 1.84% 0%, ${transparentize(0.3, 'pink')} 0%, ${'#E6E6FA'} 100%);
-  box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.01), 0px 4px 8px rgba(0, 0, 0, 0.04), 0px 16px 24px rgba(0, 0, 0, 0.04)
-  0px 24px 32px rgba(0, 0, 0, 0.01);
-  border-radius: 16px;
-  padding: 0rem;
-`
+//${({ theme }) => darken(0.1, theme.primary1)}
+// background: radial-gradient(76.02% 75.41% at 40% 0%, #FFB6C1 30%, #E6E6FA 100%);
 
-//background: radial-gradient(76.02% 75.41% at 40% 0%, #FFB6C1 30%, #E6E6FA 100%);
-/**
- * The styled container element that wraps the content of most pages and the tabs.
- */
-export function AppBody({ children, ...rest }: { children: React.ReactNode }) {
-  return <BodyWrapper {...rest}>{children}</BodyWrapper>
-}
+function OverviewHelpInfo( ) {
+  return (<>
+            <Text> This is the overview of AREC ecosystem. </Text>
+          </>
+        )
+  }
 
 export default function Overview() {
-  // get data for lists and totals
-//  const allPairs = useAllPairData()
-//  const allTokens = useAllTokenData()
-//  const transactions = useGlobalTransactions()
-//  const { totalLiquidityUSD, oneDayVolumeUSD, volumeChangeUSD, liquidityChangeUSD } = useGlobalData()
 
-  // breakpoints
-//  const below800 = useMedia('(max-width: 800px)')
+  // const { account, chainId } = useActiveWeb3React()
+  const theme = useContext(ThemeContext)
+
+  // toggle wallet when disconnected
+  // const toggleWalletModal = useWalletModalToggle()
+
+  const { 
+    AllARECCount,
+    AllRedeemedARECCount,
+    AllLiquidizedARECCount,
+    AllREAIssued,
+    AllREARedeemed,
+    AllREALiquidized,  
+    allARECRetirmentTotalSupply,
+    AllARECRetirmentTotalAmount,
+    ARECTotalSupply,
+    ARECTotalOffset
+    
+/*    
+    numberOfARECNft, 
+          allARECInfo, 
+          allARECNftTokensID, 
+          totalRECAmountIssued, 
+          totalRECAmountPending
+*/          
+        } = useOverallARECInfo()
+
+  const AllARECRetirmentTotalAmountString = useMemo (()=>{
+    if (!AllARECRetirmentTotalAmount) return undefined
+    return (new Fraction(AllARECRetirmentTotalAmount.toString(), JSBI.BigInt(1000000))).toFixed(3)
+  },[AllARECRetirmentTotalAmount])
+  
 
 
-  // for tracked data on pairs
-//  const [useTracked, setUseTracked] = useState(true)
+  const AllREAIssuedString = useMemo (()=>{
+    if (!AllREAIssued) return undefined
+    return (new Fraction(AllREAIssued.toString(), JSBI.BigInt(1000000))).toFixed(3)
+  },[AllREAIssued])
+  
+
+  const AllREARedeemedString = useMemo (()=>{
+    if (!AllREARedeemed) return undefined
+    return (new Fraction(AllREARedeemed.toString(), JSBI.BigInt(1000000))).toFixed(3)
+  },[AllREARedeemed])
+
+  const AllREALiquidizedString = useMemo (()=>{
+    if (!AllREALiquidized) return undefined
+    return (new Fraction(AllREALiquidized.toString(), JSBI.BigInt(1000000))).toFixed(3)
+  },[AllREALiquidized])
+
+  const ARECTotalSupplyString = useMemo (()=>{
+    if (!ARECTotalSupply) return undefined
+    return (new Fraction(ARECTotalSupply.toString(), JSBI.BigInt(1000000))).toFixed(3)
+  },[ARECTotalSupply])
+
+  const ARECTotalOffsetString = useMemo (()=>{
+    if (!ARECTotalOffset) return undefined
+    return (new Fraction(ARECTotalOffset.toString(), JSBI.BigInt(1000000))).toFixed(3)
+  },[ARECTotalOffset])
+
+  
 
   return (
     <>
       <AppBody>
-        <PageHeader header="AREC Overview" />      
-        <DataRow style={{ gap: '10px', padding: '1rem' }}>
-          <InfoData tag={'Total AREC NFTs:'} info={'10 NFTs'}/>
-          <InfoData tag={'Total AREC Power:'} info={'10000 MWH'}/>
-          <InfoData tag={'Total AREC Holders:'} info={'1000'}/>
-        </DataRow> 
-        <Divider />
-        <DataRow style={{ gap: '10px', padding: '1rem' }}>  
-          <InfoData tag={'AKRE Max Supply:'} info={'10,000,000,000 AKRE'}/>  
-          <InfoData tag={'AKRE Circulating Supply:'} info={'100,000 AKRE'}/>              
-          <InfoData tag={'Total AKRE Hoders:'} info={'90,000'}/>
-        </DataRow> 
-        <CardNoise />
-      </AppBody>
-      <Gap />
-      <AppBody>
-        <PageHeader header="My Profile" />      
-        <DataRow style={{ gap: '10px', padding: '1rem' }}>
-          <InfoData tag={'My AKRE'} info={'20,000 ARKE'}/>
-          <InfoData tag={'My AREC NFTs:'} info={'10 NFTs'}/>
-          <InfoData tag={'My AREC Power:'} info={'10000 MWH'}/>
-        </DataRow> 
-        <Divider />
-        <DataRow style={{ gap: '10px', padding: '1rem' }}>  
-          <InfoData tag={'AREC Redeemed:'} info={'1,000 KWH'}/>  
-          <InfoData tag={'AREC Offset:'} info={'20,000 KWH'}/>              
-          <InfoData tag={'Total AREC retired:'} info={'50,000 KWH'}/>
-        </DataRow> 
-        <CardNoise />
+      <StyledPageCard bgColor={'red'}>
+        <PageHeader header={'AREC Overview'}>
+          <QuestionHelper text={'AREC Overview'} info={<OverviewHelpInfo/>} />
+        </PageHeader>
+        <Wrapper id="issuance-page">
+
+              <DataRow>
+                <Container style={{boxShadow:"inset 0px 0px 4px #06c", margin:'0rem 0rem'}}>
+                  <AutoColumn gap="sm">
+                    <TYPE.body style={{ margin: '0.5rem 1rem 0rem' }}>Total AREC Issued:</TYPE.body>
+                    <RowBetween style={{ padding:'0rem 1rem'}}>
+                      <TYPE.body fontSize={24} fontWeight={500} style={{ color:theme.primary1, textAlign:'center' }}>
+                        {AllARECCount?.toString()}
+                      </TYPE.body>
+                      <TYPE.body fontSize={20} fontWeight={400} style={{ textAlign: 'center' }}>
+                        NFTs
+                      </TYPE.body>
+                    </RowBetween>
+                    <RowBetween style={{ padding:'0rem 1rem 0.5rem'}}>
+                      <TYPE.body fontSize={20} fontWeight={500} style={{color: theme.primary1, textAlign: 'center' }}>
+                        {AllREAIssuedString}
+                      </TYPE.body>
+                      <TYPE.body fontSize={20} fontWeight={400} style={{ textAlign: 'center' }}>
+                        KWH
+                      </TYPE.body>
+                    </RowBetween>
+                  </AutoColumn>
+                </Container>
+                
+                <Container style={{boxShadow:"inset 0px 0px 4px #06c", margin:'0rem 0rem'}}>
+                  <AutoColumn gap="sm">
+                    <TYPE.body style={{ margin: '0.5rem 1rem 0rem' }}>Total AREC Retired:</TYPE.body>
+                    <RowBetween style={{ padding:'0rem 1rem'}}>
+                      <TYPE.body fontSize={24} fontWeight={500} style={{color:theme.primary1, textAlign: 'center' }}>
+                        {allARECRetirmentTotalSupply?.toString()}
+                      </TYPE.body>
+                      <TYPE.body fontSize={20} fontWeight={400} style={{ textAlign: 'center' }}>
+                        NFTs
+                      </TYPE.body>
+                    </RowBetween>
+                    <RowBetween style={{ padding:'0rem 1rem 0.5rem'}}>
+                      <TYPE.body fontSize={20} fontWeight={500} style={{ color:theme.primary1, textAlign: 'center' }}>
+                        {AllARECRetirmentTotalAmountString}
+                      </TYPE.body>
+                      <TYPE.body fontSize={20} fontWeight={400} style={{ textAlign: 'center' }}>
+                        KWH
+                      </TYPE.body>
+                    </RowBetween>
+                  </AutoColumn>
+                </Container>
+              </DataRow>
+
+          <AutoColumn gap={'md'} style={{ padding:'1rem 0rem 0.5rem'}}>
+            <Container style={{boxShadow:"inset 0px 0px 4px #06c", margin:'0rem 0rem'}}>
+            
+              <AutoColumn gap="4px" style={{padding: "0.5rem 0.5rem 0.5rem 0.5rem"}}>
+                  <ARECContainer>
+                    <RowBetween align="center" height='24px'>
+                      <Text lineHeight={"24px"} fontWeight={500} fontSize={14} color={theme.text2}> Redeemed AREC NFTs: </Text>
+                      { (AllRedeemedARECCount === undefined) ? (
+                          <Loader  />
+                        ) : (
+                          <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text2}> {AllRedeemedARECCount} </Text>
+                        ) 
+                      }
+                    </RowBetween>
+
+                    { AllREARedeemedString && (
+                      <RowBetween align="center" height='24px'>
+                        <Text lineHeight={"24px"} fontWeight={500} fontSize={14} color={theme.text2}> Redeemed AREC Amount: </Text>
+                        <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text2}> 
+                          {AllREARedeemedString} KWH
+                        </Text>
+                      </RowBetween>
+                    )}   
+                  </ARECContainer>
+                  <ARECContainer style={{marginTop: "0.5rem"}}>
+                    <RowBetween align="center" height='24px'>
+                      <Text lineHeight={"24px"} fontWeight={500} fontSize={14} color={theme.text2}> Liquidized AREC NFTs: </Text>
+                      { (AllLiquidizedARECCount === undefined) ? (
+                          <Loader  />
+                        ) : (
+                          <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text2}> {AllLiquidizedARECCount} </Text>
+                        ) 
+                      }
+                    </RowBetween>
+                    { AllREALiquidizedString && (
+                      <RowBetween align="center" height='24px'>
+                        <Text lineHeight={"24px"} fontWeight={500} fontSize={14} color={theme.text2}> Liquidized AREC Amount: </Text>
+                        <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text2}> 
+                          {AllREALiquidizedString} KWH
+                        </Text>
+                      </RowBetween>
+                    )} 
+                    { ARECTotalSupplyString && (
+                      <RowBetween align="center" height='24px'>
+                        <Text lineHeight={"24px"} fontWeight={500} fontSize={14} color={theme.text2}> Circulating AREC ERC20 Tokens: </Text>
+                        <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text2}> 
+                          {ARECTotalSupplyString} ARET
+                        </Text>
+                      </RowBetween>
+                    )}            
+
+                    { ARECTotalOffsetString && (
+                      <RowBetween align="center" height='24px'>
+                        <Text lineHeight={"24px"} fontWeight={500} fontSize={14} color={theme.text2}> Burned AREC ERC20 Token: </Text>
+                        <Text lineHeight={"24px"} fontWeight={700} fontSize={14} color={theme.text2}> 
+                          {ARECTotalOffsetString} ARET
+                        </Text>
+                      </RowBetween>
+                    )}   
+
+                </ARECContainer>
+              </AutoColumn>
+            </Container>   
+          </AutoColumn>
+          
+        </Wrapper>
+        </StyledPageCard>
       </AppBody>
 
     </>
   )
 }
-
-//<Search />
-//<GlobalStats />
-
-/*
-{below800 && ( // mobile card
-            <Box mb={20}>
-              <Panel>
-                <Box>
-                  <AutoColumn gap="36px">
-                    <AutoColumn gap="20px">
-                      <RowBetween>
-                        <TYPE.main>Volume (24hrs)</TYPE.main>
-                        <div />
-                      </RowBetween>
-                      <RowBetween align="flex-end">
-                        <TYPE.main fontSize={'1.5rem'} lineHeight={1} fontWeight={600}>
-                          {oneDayVolumeUSD ? formattedNum(oneDayVolumeUSD, true) : '-'}
-                        </TYPE.main>
-                        <TYPE.main fontSize={12}>{volumeChangeUSD ? formattedPercent(volumeChangeUSD) : '-'}</TYPE.main>
-                      </RowBetween>
-                    </AutoColumn>
-                    <AutoColumn gap="20px">
-                      <RowBetween>
-                        <TYPE.main>Total Liquidity</TYPE.main>
-                        <div />
-                      </RowBetween>
-                      <RowBetween align="flex-end">
-                        <TYPE.main fontSize={'1.5rem'} lineHeight={1} fontWeight={600}>
-                          {totalLiquidityUSD ? formattedNum(totalLiquidityUSD, true) : '-'}
-                        </TYPE.main>
-                        <TYPE.main fontSize={12}>
-                          {liquidityChangeUSD ? formattedPercent(liquidityChangeUSD) : '-'}
-                        </TYPE.main>
-                      </RowBetween>
-                    </AutoColumn>
-                  </AutoColumn>
-                </Box>
-              </Panel>
-            </Box>
-          )}
-          {!below800 && (
-            <GridRow>
-              <Panel style={{ height: '100%', minHeight: '300px' }}>
-                <GlobalChart display="liquidity" />
-              </Panel>
-              <Panel style={{ height: '100%' }}>
-                <GlobalChart display="volume" />
-              </Panel>
-            </GridRow>
-          )}
-          {below800 && (
-            <AutoColumn style={{ marginTop: '6px' }} gap="24px">
-              <Panel style={{ height: '100%', minHeight: '300px' }}>
-                <GlobalChart display="liquidity" />
-              </Panel>
-            </AutoColumn>
-          )}
-          <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
-            <RowBetween>
-              <TYPE.main fontSize={'1.125rem'} style={{ whiteSpace: 'nowrap' }}>
-                Top Tokens
-              </TYPE.main>
-              <CustomLink to={'/tokens'}>See All</CustomLink>
-            </RowBetween>
-          </ListOptions>
-          <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
-            <TopTokenList tokens={allTokens} />
-          </Panel>
-          <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
-            <RowBetween>
-              <TYPE.main fontSize={'1rem'} style={{ whiteSpace: 'nowrap' }}>
-                Top Pairs
-              </TYPE.main>
-              <AutoRow gap="4px" width="100%" justifyContent="flex-end">
-                <CheckBox
-                  checked={useTracked}
-                  setChecked={() => setUseTracked(!useTracked)}
-                  text={'Hide untracked pairs'}
-                />
-                <QuestionHelper text="USD amounts may be inaccurate in low liquidity pairs or pairs without ETH or stablecoins." />
-                <CustomLink to={'/pairs'}>See All</CustomLink>
-              </AutoRow>
-            </RowBetween>
-          </ListOptions>
-          <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
-            <PairList pairs={allPairs} useTracked={useTracked} />
-          </Panel>
-          <span>
-            <TYPE.main fontSize={'1.125rem'} style={{ marginTop: '2rem' }}>
-              Transactions
-            </TYPE.main>
-          </span>
-          <Panel style={{ margin: '1rem 0' }}>
-            <TxnList transactions={transactions} />
-          </Panel>
-        </div>
-*/

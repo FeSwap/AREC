@@ -93,7 +93,7 @@ function Web3Network(): JSX.Element | null {
   if (!chainId) return null
 
   return (
-     <StyledImage src={NETWORK_ICON[chainId]} alt="Switch Network" size="20px" />
+     <StyledImage src={process.env.PUBLIC_URL + NETWORK_ICON[chainId]} alt="Switch Network" size="20px" />
   )
 }
 

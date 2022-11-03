@@ -7,10 +7,12 @@ import { BigNumber } from 'ethers'
 import { useSingleCallResult, useSingleContractMultipleData } from '../multicall/hooks'
 import { ZERO_ADDRESS } from '../../constants'
 import { useMemo } from 'react'
-import { arkreenTokenAddress } from '../../hooks/useContract'
+import {  } from '../../hooks/useContract'
 
-import { useRECIssuanceContract, useArkreenRetirementContract, useArkreenRECTokenContract } from '../../hooks/useContract'
+import {  useRECIssuanceContract, useArkreenRetirementContract, useArkreenRECTokenContract,
+          ARECTokenAddress, arkreenRetirementAddress, arkreenTokenAddress } from '../../hooks/useContract'
 import { useGetARECConfirmCounter, useSetARECConfirmCounter } from '../user/hooks'
+
 
 export interface RECRequest {
   issuer:       string
@@ -66,7 +68,6 @@ export interface  OffsetAction {
 
 export const arkreenToken = new Token(ChainId.MATIC_TESTNET, arkreenTokenAddress, 18, 'AKRE', 'Arkreen DAO Token')
 
-
 export function useRECIssuanceCallback(
   recRequest:     RECRequest,
   signatureToPay: SignatureToPay
@@ -99,12 +100,34 @@ export function useRECIssuanceCallback(
   return { recIssuanceCallback }
 }
 
+// Get AREC retirment NFT number
+export function useARECRetirmentTotalSupply(): number | undefined {
+  const { account } = useActiveWeb3React()
+  const arkreemRetirementContract = useArkreenRetirementContract(false)     
+  const res = useSingleCallResult(arkreemRetirementContract, 'totalSupply')
+  if (account && res.result && !res.loading) {
+    return parseInt(res.result[0])
+  }
+  return undefined
+}
+
+// Get AREC retirment NFT number
+export function useARECRetirmentTotalAmount(): BigNumber | undefined {
+  const { account } = useActiveWeb3React()
+  const arkreemRetirementContract = useArkreenRetirementContract(false)     
+  const res = useSingleCallResult(arkreemRetirementContract, 'totalOffsetRetired')
+  if (account && res.result && !res.loading) {
+    return BigNumber.from(res.result[0])
+  }
+  return undefined
+}
+
 
 // Get AREC Nft count of the current user
-export function useARECCount(): number | undefined {
+export function useARECCount(address?: string): number | undefined {
   const { account } = useActiveWeb3React()
   const arkreenRECIssuanceContract = useRECIssuanceContract(false)    
-  const res = useSingleCallResult(arkreenRECIssuanceContract, 'balanceOf', [account??ZERO_ADDRESS])
+  const res = useSingleCallResult(arkreenRECIssuanceContract, 'balanceOf', [address ?? account ?? ZERO_ADDRESS])
   if (account && res.result && !res.loading) {
     return parseInt(res.result[0])
   }
@@ -118,6 +141,39 @@ export function useARECTotalSupply(): number | undefined {
   const res = useSingleCallResult(arkreenRECIssuanceContract, 'totalSupply', [])
   if (account && res.result && !res.loading) {
     return parseInt(res.result[0])
+  }
+  return undefined
+}
+
+// Get all AREC amount issued
+export function useAllREAIssued(): BigNumber | undefined {
+  const { account } = useActiveWeb3React()
+  const arkreenRECIssuanceContract = useRECIssuanceContract(false)    
+  const res = useSingleCallResult(arkreenRECIssuanceContract, 'allRECIssued')
+  if (account && res.result && !res.loading) {
+    return BigNumber.from(res.result[0])
+  }
+  return undefined
+}
+
+// Get all AREC amount Redeemed
+export function useAllREARedeemed(): BigNumber | undefined {
+  const { account } = useActiveWeb3React()
+  const arkreenRECIssuanceContract = useRECIssuanceContract(false)    
+  const res = useSingleCallResult(arkreenRECIssuanceContract, 'allRECRedeemed')
+  if (account && res.result && !res.loading) {
+    return BigNumber.from(res.result[0])
+  }
+  return undefined
+}
+
+// Get all AREC amount Liquidized
+export function useAllREALiquidized(): BigNumber | undefined {
+  const { account } = useActiveWeb3React()
+  const arkreenRECIssuanceContract = useRECIssuanceContract(false)    
+  const res = useSingleCallResult(arkreenRECIssuanceContract, 'allRECLiquidized')
+  if (account && res.result && !res.loading) {
+    return BigNumber.from(res.result[0])
   }
   return undefined
 }
@@ -310,4 +366,147 @@ export function useGetARECTBalance():  BigNumber | undefined {
     return (res.result[0])
   }
   return undefined
+}
+
+export function useGetARECTotalOffset():  BigNumber | undefined {
+  const { account } = useActiveWeb3React()
+  const ARECTokenContract = useArkreenRECTokenContract(false)  
+  const res = useSingleCallResult(ARECTokenContract, 'totalOffset')
+  if (account && res.result && !res.loading) {
+    return (res.result[0])
+  }
+  return undefined
+}
+
+export function useGetARECTotalSupply():  BigNumber | undefined {
+  const { account } = useActiveWeb3React()
+  const ARECTokenContract = useArkreenRECTokenContract(false)  
+  const res = useSingleCallResult(ARECTokenContract, 'totalSupply')
+  if (account && res.result && !res.loading) {
+    return (res.result[0])
+  }
+  return undefined
+}
+
+export function useOverallARECInfo(): {
+  AllARECCount:                 number | undefined
+  AllRedeemedARECCount:         number | undefined
+  AllLiquidizedARECCount:       number | undefined
+  AllREAIssued:                 BigNumber | undefined
+  AllREARedeemed:               BigNumber | undefined
+  AllREALiquidized:             BigNumber | undefined
+  allARECRetirmentTotalSupply:  number | undefined
+  AllARECRetirmentTotalAmount:  BigNumber | undefined
+  ARECTotalSupply:              BigNumber | undefined
+  ARECTotalOffset:              BigNumber | undefined
+} {
+//  const { account } = useActiveWeb3React()
+//  const arkreenRECIssuanceContract = useRECIssuanceContract(false)  
+//  const  arkreenRetirementContract =  useArkreenRetirementContract(false)
+  
+  const AllARECCount = useARECTotalSupply()
+  const AllRedeemedARECCount = useARECCount(arkreenRetirementAddress)
+  const AllLiquidizedARECCount = useARECCount(ARECTokenAddress)
+
+  const AllREAIssued = useAllREAIssued()
+  const AllREARedeemed = useAllREARedeemed()
+  const AllREALiquidized = useAllREALiquidized()
+
+  const allARECRetirmentTotalSupply = useARECRetirmentTotalSupply()
+  const AllARECRetirmentTotalAmount = useARECRetirmentTotalAmount()
+
+  const ARECTotalSupply =  useGetARECTotalSupply()
+  const ARECTotalOffset =  useGetARECTotalOffset()
+
+/*
+  const arecTotalSupply = useARECTotalSupply()
+  const ARECConfirmedCount = useGetARECConfirmCounter()
+  const setARECConfirmCounter = useSetARECConfirmCounter()
+
+  // get all nft Token IDs
+  const nftARECIndexes = []
+  let allARECNftTokensID: BigNumber[] = []
+  for (let i = ARECConfirmedCount; i < (arecTotalSupply ?? 0); i++) {
+    nftARECIndexes.push([i+1])
+    allARECNftTokensID.push(BigNumber.from(i+1))
+  }
+
+  const allARECNftInfos = useSingleContractMultipleData(arkreenRECIssuanceContract, 'getRECData', nftARECIndexes)
+
+  let nftARECInfoList = []
+  let pendingFound = false
+  for (let i = 0; i < (nftARECIndexes.length ?? 0); i++) {
+    if(allARECNftInfos[i]?.valid && !allARECNftInfos[i]?.loading) {
+      nftARECInfoList.push(allARECNftInfos[i].result?.[0])
+
+      if(!pendingFound){
+        if((nftARECInfoList[i] as RECData)?.status === REC_STARUS.Certified) {
+          setARECConfirmCounter(nftARECIndexes[i][0])
+
+        } else if ( (nftARECInfoList[i] as RECData)?.status === REC_STARUS.Pending ||
+                    (nftARECInfoList[i] as RECData)?.status === REC_STARUS.Rejected ) {
+          pendingFound = true
+        }
+      }
+    }
+  }
+  
+  // get all nft Token IDs
+  const nftARECIndexes = []
+  for (let i = 0; i < (nftARECCount ?? 0); i++) {
+    nftARECIndexes.push([account??ZERO_ADDRESS, i])
+  }
+  const allARECNftTokensIDs = useSingleContractMultipleData(arkreenRECIssuanceContract, 'tokenOfOwnerByIndex', nftARECIndexes)
+
+  // get all AREC nft Token Infos
+  let allARECNftTokensIDList = []
+  for (let i = 0; i < (allARECNftTokensIDs.length ?? 0); i++) {
+    if(allARECNftTokensIDs[i]?.valid && !allARECNftTokensIDs[i]?.loading && !allARECNftTokensIDs[i]?.error)
+      allARECNftTokensIDList.push([allARECNftTokensIDs[i].result?.[0]?? BigNumber.from(0)])
+  }
+
+  const allARECNftInfos = useSingleContractMultipleData(arkreenRECIssuanceContract, 'getRECData', allARECNftTokensIDList)
+
+  let nftARECInfoList = []
+  let allARECNftTokensID: BigNumber[] = []
+  for (let i = 0; i < (allARECNftInfos.length ?? 0); i++) {
+    if(allARECNftInfos[i]?.valid && !allARECNftInfos[i]?.loading && !allARECNftInfos[i]?.error) {
+      nftARECInfoList.push(allARECNftInfos[i].result?.[0])
+      allARECNftTokensID.push(allARECNftTokensIDs[i].result?.[0]?? BigNumber.from(0))
+    }
+  }
+
+  let totalRECAmountIssued: BigNumber = BigNumber.from(0)
+  let totalRECAmountPending: BigNumber = BigNumber.from(0)
+  let cancelledAREC:number = 0
+ 
+  for (let i = 0; i < (nftARECInfoList ? nftARECInfoList.length: 0); i++) {
+    if((nftARECInfoList[i] as RECData)?.status === REC_STARUS.Cancelled) {
+      cancelledAREC += 1
+    } else if((nftARECInfoList[i] as RECData)?.status === REC_STARUS.Certified) {
+      totalRECAmountIssued = totalRECAmountIssued.add((nftARECInfoList[i] as RECData)?.amountREC)
+    } else {
+      totalRECAmountPending = totalRECAmountPending.add((nftARECInfoList[i] as RECData)?.amountREC)
+    }
+  }
+  return {  numberOfARECNft:      (nftARECCount !== undefined) ? nftARECCount- cancelledAREC: undefined,
+            allARECInfo:          nftARECInfoList,
+            allARECNftTokensID,
+            totalRECAmountIssued,
+            totalRECAmountPending,
+  }
+*/
+  return {
+        AllARECCount,
+        AllRedeemedARECCount,
+        AllLiquidizedARECCount,
+        AllREAIssued,
+        AllREARedeemed,
+        AllREALiquidized,     
+        allARECRetirmentTotalSupply,
+        AllARECRetirmentTotalAmount,
+        ARECTotalSupply,
+        ARECTotalOffset
+    }
+
 }
