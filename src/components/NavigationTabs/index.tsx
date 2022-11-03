@@ -41,14 +41,14 @@ export function FindPoolTabs() {
   )
 }
 
+//<HistoryLink to="/pool">
+//<StyledArrowLeft fontWeight={500} style={{marginRight:'24px'}} />
+//</HistoryLink> 
 export function AddRemoveTabs({ adding, creating }: { adding: boolean; creating: boolean }) {
   return (
     <StyledPageHeader>
       <RowBetween>
         <RowFixed>
-          <HistoryLink to="/pool">
-            <StyledArrowLeft fontWeight={500} style={{marginRight:'24px'}} />
-          </HistoryLink> 
           <TYPE.black fontWeight={500}>{creating ? 'Create a pair' : adding ? 'Add Liquidity' : 'Remove Liquidity'}</TYPE.black>
         </RowFixed>
          <QuestionHelper

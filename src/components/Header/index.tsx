@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import { Text } from 'rebass'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
 import { NavLink } from 'react-router-dom'
-import { darken } from 'polished'
+//import { darken } from 'polished'
 import Web3Network, { NETWORK_LABELS } from '../Web3Network'
 //import { useTranslation } from 'react-i18next'
 
@@ -16,7 +16,8 @@ import { useActiveWeb3React } from '../../hooks'
 import { useETHBalances, useAggregateFeswBalance } from '../../state/wallet/hooks'
 import { CardNoise } from '../earn/styled'
 import { CountUp } from 'use-count-up'
-import { TYPE, ExternalLink } from '../../theme'
+//import { TYPE, ExternalLink } from '../../theme'
+import { TYPE } from '../../theme'
 
 import { BlueCard } from '../Card'
 import Settings from '../Settings'
@@ -239,6 +240,7 @@ const StyledNavLink = styled(NavLink).attrs({
   `};
 `
 
+/*
 const StyledExternalLink = styled(ExternalLink).attrs({
   activeClassName
 })<{ isActive?: boolean }>`
@@ -269,8 +271,8 @@ const StyledExternalLink = styled(ExternalLink).attrs({
     font-size: 1rem;
     margin: 0 3px;
 `};
-
 `
+*/
 
 
 function Header({ history }: RouteComponentProps) {
@@ -308,21 +310,14 @@ function Header({ history }: RouteComponentProps) {
       </Modal>
       {
         ((history.location.pathname === '/swap') || 
-          (history.location.pathname === '/add') ||
-          (history.location.pathname === '/vote')) ?
+          (history.location.pathname.includes('/add'))) ?
           <HeaderLinks>
             <StyledNavLink id={`swap-nav-link`} to={'/swap'}>
               Swap
             </StyledNavLink>
-            <StyledNavLink id={`pool-nav-link`} to={'/add/ETH'} >
+            <StyledNavLink id={`pool-nav-link`} to={'/add/MATIC'} >
               Liquidity
             </StyledNavLink>
-            <StyledNavLink id={`dao-nav-link`} to={'/vote'}>
-              DAO
-            </StyledNavLink>
-            <StyledExternalLink id={`charts-nav-link`} href={'https://info.feswap.io'}>
-              Charts <span style={{ fontSize: '11px' }}>↗</span>
-            </StyledExternalLink>	 
           </HeaderLinks> : <div/>
       }
       <HeaderControls>
