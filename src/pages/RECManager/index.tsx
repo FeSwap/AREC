@@ -24,7 +24,7 @@ import { TYPE } from '../../theme'
 import { RECData, REC_STARUS, RECRequest } from '../../state/issuance/hooks'
 import AppBody from '../AppBody'
 import QuestionHelper from '../../components/QuestionHelper'
-import { ARECSelect } from '../../components/ARecIssuance'
+import { ARECSelect, ARECOption } from '../../components/ARecIssuance'
 
 export interface ProfileAREC {
   readonly startDate:       string
@@ -234,15 +234,15 @@ export default function RECManager() {
                   </RowBetween>                  
 
                   <div style={{margin: '0.8rem 0.6rem 0rem'}}>
-                    <ARECSelect itemselected={!!arecSelected} onChange = {onARECSelect}>
-                      <option disabled> Select AREC NFT to confirm </option>   
+                    <ARECSelect itemselected={!!arecSelected} defaultValue="none" onChange = {onARECSelect}>
+                      <ARECOption key="none" disabled> Select AREC NFT to confirm </ARECOption>   
                       {allARECInfo.map((recData: RECData, index) => {
                         const optionText_ID = '0000'.concat(allARECNftTokensID[index].toString())
-                        return  <option value={index} > 
+                        return  <ARECOption  key={optionText_ID} value={index} > 
                                   {'AREC_'.concat(optionText_ID.substring(optionText_ID.length-4)).concat(':')}
                                   {'   '}
                                   {recPowerList[index]} {`  `} {recStatusList[index]} 
-                                </option>
+                                </ARECOption>
                       })}
                     </ARECSelect>
                   </div>
