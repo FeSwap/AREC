@@ -235,7 +235,7 @@ export default function RECManager() {
 
                   <div style={{margin: '0.8rem 0.6rem 0rem'}}>
                     <ARECSelect itemselected={!!arecSelected} defaultValue="none" onChange = {onARECSelect}>
-                      <ARECOption key="none" disabled> Select AREC NFT to confirm </ARECOption>   
+                      <ARECOption key="none" value="none" disabled hidden> Select AREC NFT to confirm </ARECOption>   
                       {allARECInfo.map((recData: RECData, index) => {
                         const optionText_ID = '0000'.concat(allARECNftTokensID[index].toString())
                         return  <ARECOption  key={optionText_ID} value={index} > 
