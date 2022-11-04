@@ -20,7 +20,7 @@ import Row, { RowBetween, RowFixed } from '../../components/Row'
 
 import { PairState } from '../../data/Reserves'
 import { useActiveWeb3React } from '../../hooks'
-import { useCurrency } from '../../hooks/Tokens'
+import { useCurrency, useNativeTokenName } from '../../hooks/Tokens'
 import { ApprovalState, useApproveCallback } from '../../hooks/useApproveCallback'
 import useTransactionDeadline from '../../hooks/useTransactionDeadline'
 import { useWalletModalToggle } from '../../state/application/hooks'
@@ -340,7 +340,7 @@ export default function AddLiquidity({
 
   const handleCurrencyASelect = useCallback(
     (currencyA: Currency) => {
-      const newCurrencyIdA = currencyId(currencyA)
+      const newCurrencyIdA = currencyId(currencyA, chainId)
       if (newCurrencyIdA === currencyIdB) {
         history.push(`/add/${currencyIdB}/${currencyIdA}`)
         onSetSplitRate(100-rateSplit)
@@ -352,23 +352,25 @@ export default function AddLiquidity({
         }
       }
     },
-    [currencyIdB, history, currencyIdA, onSetSplitRate, rateSplit]
+    [currencyIdB, history, currencyIdA, onSetSplitRate, rateSplit, chainId]
   )
+
+  const tokenNameNative = useNativeTokenName()
   const handleCurrencyBSelect = useCallback(
     (currencyB: Currency) => {
-      const newCurrencyIdB = currencyId(currencyB)
+      const newCurrencyIdB = currencyId(currencyB, chainId)
       if (currencyIdA === newCurrencyIdB) {
         if (currencyIdB) {
           history.push(`/add/${currencyIdB}/${newCurrencyIdB}`)
           onSetSplitRate(100-rateSplit)
-        } else {
-          history.push(`/add/ETH/${newCurrencyIdB}`)
+        } else { 
+          history.push(`/add/${tokenNameNative}/${newCurrencyIdB}`)
         }
       } else {
-        history.push(`/add/${currencyIdA ? currencyIdA : 'ETH'}/${newCurrencyIdB}`)
+        history.push(`/add/${currencyIdA ? currencyIdA : tokenNameNative}/${newCurrencyIdB}`)
       }
     },
-    [currencyIdA, history, currencyIdB, onSetSplitRate, rateSplit]
+    [currencyIdA, history, currencyIdB, onSetSplitRate, rateSplit, tokenNameNative, chainId]
   )
 
   const handleDismissConfirmation = useCallback(() => {

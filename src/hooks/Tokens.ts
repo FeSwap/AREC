@@ -116,3 +116,8 @@ export function useCurrencyFromToken(token: Token): Currency | null | undefined 
   const curreny = useToken(isETH ? undefined : token.address)
   return isETH ? ETHER : curreny
 }
+
+export function useNativeTokenName(): string {
+  const { chainId } = useActiveWeb3React()
+  return ETHER.getSymbol(chainId) ?? 'ETH'
+}
